@@ -1,3 +1,65 @@
 <resources>
-    <string name="app_name">BioGeo-check</string>
+    <string name="app_name">BioGeo-Check</string>
+
+    <!-- Login -->
+    <string name="login_title">Iniciar Sesión</string>
+    <string name="login_subtitle">Accede a tu cuenta de fichaje</string>
+    <string name="email_hint">Correo electrónico</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="btn_login">Iniciar Sesión</string>
+    <string name="btn_register_link">¿No tienes cuenta? Regístrate</string>
+    <string name="login_error_empty_email">Introduce tu correo electrónico</string>
+    <string name="login_error_invalid_email">Correo electrónico no válido</string>
+    <string name="login_error_empty_password">Introduce tu contraseña</string>
+    <string name="login_error_short_password">La contraseña debe tener al menos 6 caracteres</string>
+
+    <!-- Register -->
+    <string name="register_title">Crear Cuenta</string>
+    <string name="register_subtitle">Regístrate para empezar a fichar</string>
+    <string name="name_hint">Nombre completo</string>
+    <string name="confirm_password_hint">Confirmar contraseña</string>
+    <string name="btn_register">Registrarse</string>
+    <string name="btn_login_link">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="register_error_empty_name">Introduce tu nombre</string>
+    <string name="register_error_password_mismatch">Las contraseñas no coinciden</string>
+
+    <!-- Home / Fichaje -->
+    <string name="home_title">Fichaje</string>
+    <string name="home_greeting">Hola, %1$s</string>
+    <string name="btn_fichar_entrada">Fichar Entrada</string>
+    <string name="btn_fichar_salida">Fichar Salida</string>
+    <string name="status_sin_fichar">Sin fichar</string>
+    <string name="status_fichado_entrada">Entrada registrada</string>
+    <string name="status_fichado_salida">Salida registrada</string>
+    <string name="location_status_ok">📍 Ubicación dentro del rango</string>
+    <string name="location_status_error">⚠️ Fuera del rango permitido</string>
+    <string name="location_status_loading">🔄 Obteniendo ubicación…</string>
+    <string name="location_status_disabled">❌ GPS desactivado</string>
+    <string name="biometric_prompt_title">Autenticación Biométrica</string>
+    <string name="biometric_prompt_subtitle">Usa tu huella dactilar para confirmar el fichaje</string>
+    <string name="biometric_prompt_cancel">Cancelar</string>
+
+    <!-- History -->
+    <string name="history_title">Historial de Fichajes</string>
+    <string name="history_empty">No hay fichajes registrados</string>
+    <string name="history_type_entrada">Entrada</string>
+    <string name="history_type_salida">Salida</string>
+
+    <!-- Admin -->
+    <string name="admin_title">Panel de Administración</string>
+    <string name="admin_subtitle">Gestión de fichajes globales</string>
+    <string name="btn_export_csv">Exportar CSV</string>
+    <string name="btn_export_pdf">Exportar PDF</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Fichaje</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_admin">Admin</string>
+    <string name="nav_logout">Cerrar Sesión</string>
+
+    <!-- General -->
+    <string name="loading">Cargando…</string>
+    <string name="error_generic">Ha ocurrido un error</string>
+    <string name="error_network">Error de conexión</string>
+    <string name="success">Operación exitosa</string>
 </resources>
