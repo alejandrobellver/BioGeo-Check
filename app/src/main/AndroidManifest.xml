@@ -18,28 +18,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.BioGeocheck">
-
-        <!-- Login (launcher) -->
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Register -->
-        <activity android:name=".ui.register.RegisterActivity" />
-
-        <!-- Home (fichaje) -->
-        <activity android:name=".ui.home.HomeActivity" />
-
-        <!-- History -->
-        <activity android:name=".ui.history.HistoryActivity" />
-
-        <!-- Admin -->
-        <activity android:name=".ui.admin.AdminActivity" />
-
     </application>
+
 </manifest>

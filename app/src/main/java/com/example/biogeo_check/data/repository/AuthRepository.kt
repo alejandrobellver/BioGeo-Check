@@ -1,41 +1,35 @@
 package com.example.biogeo_check.data.repository
 
-import com.example.biogeo_check.data.model.ApiResult
-import com.example.biogeo_check.data.model.User
-import com.example.biogeo_check.data.remote.LoginRequest
-import com.example.biogeo_check.data.remote.RegisterRequest
-import com.example.biogeo_check.data.remote.RetrofitClient
+import com.example.biogeo_check.data.model.Trabajador
+import com.example.biogeo_check.data.network.SupabaseClient
+import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-/**
- * Repositorio de autenticación
- */
 class AuthRepository {
+    private val client = SupabaseClient.client
 
-    private val api = RetrofitClient.apiService
+    suspend fun obtenerTrabajadorPorEmail(email: String, empresaId: String): Trabajador? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val query = client.postgrest["Trabajadores"]
+                    .select {
+                        filter {
+                            eq("email", email)
+                            eq("empresa_id", empresaId)
+                        }
+                    }
 
-    suspend fun login(email: String, password: String): ApiResult<User> {
-        return try {
-            val response = api.login(LoginRequest(email, password))
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!.user)
-            } else {
-                ApiResult.Error("Credenciales incorrectas", response.code())
+                // LOG 2: Ver el JSON crudo que devuelve Supabase antes de convertirlo a objeto
+                val rawData = query.data
+
+                val resultado = query.decodeSingleOrNull<Trabajador>()
+                resultado
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Error de conexión")
-        }
-    }
-
-    suspend fun register(name: String, email: String, password: String): ApiResult<User> {
-        return try {
-            val response = api.register(RegisterRequest(name, email, password))
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                ApiResult.Error("Error en el registro", response.code())
-            }
-        } catch (e: Exception) {
-            ApiResult.Error(e.message ?: "Error de conexión")
         }
     }
 }
