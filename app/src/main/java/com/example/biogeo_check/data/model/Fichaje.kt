@@ -1,12 +1,21 @@
 package com.example.biogeo_check.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Fichaje(
-    val usuarioId: String,  // de momento lo pongo a mano, más adelante se generará solo.
-    val tipoAccion: String, // (es la idea) "ENTRADA", "SALIDA", "INICIO_DESCANSO", "FIN_DESCANSO"
-    val latitud: Double? = null,  // Por ahora puede ser nulo hasta que metamos el GPS
-    val longitud: Double? = null, // Por ahora puede ser nulo hasta que metamos el GPS
-    val email: String
+    val id: String? = null,
+
+    val momento: String? = null,
+
+    @SerialName("tipo_accion")
+    val tipoAccion: String,
+
+    @SerialName("usuario_id")
+    val usuarioId: String,
+
+    val latitud: Double?,
+
+    val longitud: Double?
 )

@@ -11,7 +11,7 @@ data class Trabajador(
     val empresaId: String, // El enlace con la tabla Empresa
 
     @SerialName("nombre_completo")
-    val nombreCompleto: String,
+    val nombreCompleto: String?,
 
     @SerialName("rol_trabajador")
     val rolTrabajador: String, // "admin" o "empleado"
