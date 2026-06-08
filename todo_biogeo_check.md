@@ -15,7 +15,7 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 2.1 | Añadir SDK de Supabase | ⬜ **Hecho** |
+| 2.1 | Añadir SDK de Supabase | ⬜ Hecho |
 | 2.2 | Configurar variables de entorno (API keys) | ⬜ Pendiente |
 | 2.3 | Probar conexión básica con Supabase | ⬜ Pendiente |
 | 2.4 | Definir endpoints REST necesarios | ✅ **Hecho** — Definidos en `ApiService.kt` |
