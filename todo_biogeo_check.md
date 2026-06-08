@@ -15,7 +15,7 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 2.1 | Añadir SDK de Supabase | ⬜ Pendiente |
+| 2.1 | Añadir SDK de Supabase | ⬜ **Hecho** |
 | 2.2 | Configurar variables de entorno (API keys) | ⬜ Pendiente |
 | 2.3 | Probar conexión básica con Supabase | ⬜ Pendiente |
 | 2.4 | Definir endpoints REST necesarios | ✅ **Hecho** — Definidos en `ApiService.kt` |
@@ -28,22 +28,22 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 3.1 | Crear pantalla de login | ✅ **Hecho** — `LoginActivity` + layout |
-| 3.2 | Crear pantalla de registro | ✅ **Hecho** — `RegisterActivity` + layout |
-| 3.3 | Validar inputs (email/password) | ✅ **Hecho** — En ViewModels |
+| 3.1 | Crear pantalla de login | ✅ Pendiente — `LoginActivity` + layout |
+| 3.2 | Crear pantalla de registro | ✅ Pendiente — `RegisterActivity` + layout |
+| 3.3 | Validar inputs (email/password) | ✅ Pendiente — En ViewModels |
 | 3.4 | Implementar llamada a API login | ⬜ Pendiente — Repo creado, falta conectar |
-| 3.5 | Guardar sesión del usuario | ✅ **Hecho** — `SessionManager` con DataStore |
+| 3.5 | Guardar sesión del usuario | ✅ Pendiente — `SessionManager` con DataStore |
 | 3.6 | Implementar auto-login (persistencia) | ⬜ Pendiente — SessionManager listo, falta lógica en LoginActivity |
 
 ## 4. ⏱️ Sistema de Fichaje (UI)
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 4.1 | Crear botón de fichaje en UI | ✅ **Hecho** — Botón circular grande |
-| 4.2 | Definir estados (Entrada/Salida) | ✅ **Hecho** — `FichajeState` enum |
-| 4.3 | Guardar estado actual del usuario | ✅ **Hecho** — En ViewModel |
-| 4.4 | Validar flujo (no salida sin entrada) | ✅ **Hecho** — State machine en HomeViewModel |
-| 4.5 | Actualizar UI según estado | ✅ **Hecho** — Cambia color, icono, texto |
+| 4.1 | Crear botón de fichaje en UI | ✅ Pendiente — Botón circular grande |
+| 4.2 | Definir estados (Entrada/Salida) | ✅ Pendiente — `FichajeState` enum |
+| 4.3 | Guardar estado actual del usuario | ✅ Pendiente — En ViewModel |
+| 4.4 | Validar flujo (no salida sin entrada) | ✅ Pendiente — State machine en HomeViewModel |
+| 4.5 | Actualizar UI según estado | ✅ Pendiente — Cambia color, icono, texto |
 
 ## 5. 📍 Geolocalización
 
@@ -95,8 +95,8 @@
 | 10.1 | Crear RecyclerView | ✅ **Hecho** — En `activity_history.xml` |
 | 10.2 | Crear Adapter | ✅ **Hecho** — `FichajeAdapter` |
 | 10.3 | Consumir API de fichajes | ⬜ Pendiente — Repo listo |
-| 10.4 | Mostrar lista de fichajes | ✅ **Hecho** — Datos de ejemplo |
-| 10.5 | Formatear fechas correctamente | ✅ **Hecho** — `SimpleDateFormat` |
+| 10.4 | Mostrar lista de fichajes | ✅ Pendiente — Datos de ejemplo |
+| 10.5 | Formatear fechas correctamente | ✅ Pendiente — `SimpleDateFormat` |
 
 ## 11. 👥 Panel Admin / Roles
 
@@ -104,7 +104,7 @@
 |---|-------|--------|
 | 11.1 | Añadir campo rol en usuario | ✅ **Hecho** — `role` en modelo User |
 | 11.2 | Restringir vistas según rol | ⬜ Pendiente |
-| 11.3 | Crear vista admin | ✅ **Hecho** — `AdminActivity` + layout |
+| 11.3 | Crear vista admin | ✅ Pendiente — `AdminActivity` + layout |
 | 11.4 | Mostrar fichajes globales | ✅ **Hecho** — Datos de ejemplo |
 | 11.5 | Implementar exportación a CSV/PDF | ⬜ Pendiente — Botones UI listos |
 
@@ -112,14 +112,14 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 12.1 | Mejorar UI/UX básica | ✅ **Hecho** — Tema Material3, gradientes, cards |
+| 12.1 | Mejorar UI/UX básica | ✅ Pendiente — Tema Material3, gradientes, cards |
 | 12.2 | Crear tests unitarios backend | ⬜ Pendiente |
 | 12.3 | Probar login | ⬜ Pendiente |
 | 12.4 | Probar fichaje | ⬜ Pendiente |
 | 12.5 | Probar GPS | ⬜ Pendiente |
 | 12.6 | Probar biometría | ⬜ Pendiente |
 | 12.7 | Refactorizar código | ⬜ Pendiente |
-| 12.8 | Eliminar código innecesario | ✅ **Hecho** — `MainActivity` eliminada |
+| 12.8 | Eliminar código innecesario | ✅ Pendiente — `MainActivity` eliminada |
 | 12.9 | Documentar proyecto | ⬜ Pendiente |
 | 12.10 | Generar APK firmado | ⬜ Pendiente |
 
