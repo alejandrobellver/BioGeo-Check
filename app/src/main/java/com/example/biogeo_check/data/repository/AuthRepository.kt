@@ -32,7 +32,8 @@ suspend fun registrarJefeYEmpresa(
         // Usamos select() para que Supabase nos devuelva la empresa con el ID que ha generado
         val empresaInsertada = supabase.postgrest["empresa"].insert(nuevaEmpresa) {
             select()
-        }.decodeSingle<Empresa>() // Guarda el objeto entero y si no hay nada ponemos null y te dice null.
+        }.decodeSingle<Empresa>()
+        // Guarda el objeto entero y si no hay nada ponemos null y te dice null.
 
         // 3. Vincular al jefe en la tabla trabajador
         val nuevoJefe = Trabajador(
