@@ -31,7 +31,7 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 4.1 | Crear `AuthRepository` para gestionar signUp y signIn | ⬜ Pendiente |
+| 4.1 | Crear `AuthRepository` para gestionar signUp, signIn y logout | ✅ **Hecho** |
 | 4.2 | Crear pantalla de Registro de Empresa (Rol: Jefe) | ⬜ Pendiente |
 | 4.3 | Crear pantalla de Activación de Trabajador | ⬜ Pendiente |
 | 4.4 | Crear pantalla de Login (Día a día) y validaciones | ⬜ Pendiente |
@@ -88,13 +88,13 @@
 | Configuración Inicial | 5 | **5** | 0 |
 | Supabase Backend | 4 | **4** | 0 |
 | Conexión de Red | 3 | **3** | 0 |
-| Repositorios / Auth | 5 | **0** | 5 |
+| Repositorios / Auth | 5 | **1** | 4 |
 | Sistema de Fichaje | 5 | **0** | 5 |
 | Geolocalización | 3 | **0** | 3 |
 | Biometría | 2 | **0** | 2 |
 | Panel Admin | 3 | **0** | 3 |
 | Pulido Final | 4 | **0** | 4 |
-| **TOTAL** | **34** | **12** | **22** |
+| **TOTAL** | **34** | **13** | **21** |
 
 > [!NOTE]
-> **Progreso: ~35%** — Estructura base completada (Carpetas, MVVM, Modelos y Backend/Supabase listo y conectado). Siguiente fase: Lógica de Autenticación y control de accesos.
+> **Progreso: ~38%** — Estructura base y capa de datos de autenticación completadas. Siguiente fase: Desarrollo de la UI y ViewModel para el control de accesos.
