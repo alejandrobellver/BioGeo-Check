@@ -86,5 +86,8 @@ suspend fun registrarJefeYEmpresa(
 
         return trabajador ?: throw Exception("No se encontró el perfil de este trabajador en la empresa.")
     }
+    suspend fun logout() {
+        supabase.auth.signOut()
+    }
 }
 
