@@ -85,7 +85,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("employee_dashboard")
-                        NavScreen.HISTORY -> { /* Opcional: Historial */ }
+                        NavScreen.HISTORY -> { /* Empleados no tienen departamentos */ }
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -97,7 +97,19 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("admin_dashboard")
-                        NavScreen.HISTORY -> { /* Opcional: Historial */ }
+                        NavScreen.HISTORY -> navController.navigate("admin_departments")
+                        NavScreen.PROFILE -> navController.navigate("user_profile")
+                    }
+                }
+            )
+        }
+
+        composable("admin_departments") {
+            AdminDepartmentsScreen(
+                onNavigate = { screen ->
+                    when (screen) {
+                        NavScreen.HOME -> navController.navigate("admin_dashboard")
+                        NavScreen.HISTORY -> navController.navigate("admin_departments")
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -109,7 +121,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.popBackStack()
-                        NavScreen.HISTORY -> { /* Opcional: Historial */ }
+                        NavScreen.HISTORY -> navController.navigate("admin_departments") // Esto asume Jefe. Podría optimizarse.
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 },
