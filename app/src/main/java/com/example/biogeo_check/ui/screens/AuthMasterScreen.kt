@@ -16,7 +16,10 @@ import com.example.biogeo_check.ui.viewmodel.AuthState
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 
 @Composable
-fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
+fun AuthMasterScreen(
+    viewModel: AuthViewModel = viewModel(),
+    onNavigateToDashboard: (isJefe: Boolean) -> Unit = {}
+) {
     // 1. Observamos el estado del semáforo desde el ViewModel
     val state by viewModel.authState.collectAsState()
 
@@ -106,7 +109,15 @@ fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
                     Text(text = "❌ Error: $mensajeError", color = Color(0xFFEF4444), modifier = Modifier.padding(20.dp))
                 }
                 is AuthState.Success -> {
-                    Text(text = "✅ ¡Operación Exitosa!", color = emerald, fontWeight = FontWeight.Bold, modifier = Modifier.padding(20.dp))
+                    val trabajador = (state as AuthState.Success).trabajador
+                    if (trabajador != null) {
+                        LaunchedEffect(Unit) {
+                            onNavigateToDashboard(trabajador.rol == "JEFE")
+                            viewModel.resetState()
+                        }
+                    } else {
+                        Text(text = "✅ ¡Operación Exitosa! Por favor, inicia sesión.", color = emerald, fontWeight = FontWeight.Bold, modifier = Modifier.padding(20.dp))
+                    }
                 }
                 is AuthState.Idle -> {
                     // No mostramos nada, esperando a que el usuario haga algo
