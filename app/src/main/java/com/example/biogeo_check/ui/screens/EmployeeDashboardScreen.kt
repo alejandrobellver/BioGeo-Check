@@ -16,16 +16,31 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.theme.*
 
 @Composable
 fun EmployeeDashboardScreen(
-    employeeName: String,
+    vm: `DashboardViewModel.kt` = viewModel(), // 🚀 Inyectamos tu ViewModel simplificado
     onNavigate: (NavScreen) -> Unit
 ) {
-    var isClockedIn by remember { mutableStateOf(false) }
+    // 1. Extraemos los estados dinámicos del ViewModel
+    val trabajador = vm.trabajadorActual
+    val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA" // Lee el último log de Supabase
+
+    // 2.  ACTIVADOR DE CARGA: Llama al repositorio nada más abrir la pantalla para traer el perfil y el último fichaje
+    LaunchedEffect(Unit) {
+        vm.cargarDatosIniciales()
+    }
+
+   // Importante primer inicio de sesion completamos los datos faltantes
+    LaunchedEffect(trabajador) {
+        if (trabajador != null && trabajador.departamentoId == null) {
+            onNavigate(NavScreen.PROFILE)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -38,9 +53,10 @@ fun EmployeeDashboardScreen(
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
+
+            // Nombre dinámico extraído directamente de la tabla en Supabase
             Text(
-                text = "Bienvenido/a, $employeeName",
+                text = "Bienvenido/a, ${trabajador?.nombre ?: "Usuario"}",
                 color = PrimaryTextWhite,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -48,13 +64,13 @@ fun EmployeeDashboardScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Clock In/Out Button
+            // Clock In/Out Button (Botón de Fichaje Histórico)
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = { isClockedIn = !isClockedIn },
+                    onClick = { vm.alternarFichaje() }, // 🚀 Inserta una nueva fila (ENTRADA/SALIDA)
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(80.dp),
@@ -72,21 +88,21 @@ fun EmployeeDashboardScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Card 1: Today's Worked Time
+            // Card 1: Tiempo del día de hoy (Estático temporalmente)
             DashboardCard(
                 title = "Tiempo Trabajado Hoy",
-                value = "06:32:15"
+                value = "45:00"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Card 2: This Week's Total
+            // Card 2: Sumatorio de la semana (Estático temporalmente)
             DashboardCard(
                 title = "Total de esta Semana",
-                value = "32h 15m"
+                value = "10.10"
             )
         }
 

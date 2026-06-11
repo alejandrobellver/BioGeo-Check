@@ -1,7 +1,7 @@
 package com.example.biogeo_check.data.repository
 
 import com.example.biogeo_check.data.model.Empresa
-import com.example.biogeo_check.data.model.Invitaciones
+import com.example.biogeo_check.data.model.Invitacion
 import com.example.biogeo_check.data.model.Trabajador
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.auth
@@ -55,7 +55,7 @@ suspend fun registrarJefeYEmpresa(
 
         // 4.  OPTIMIZACIÓN: Creamos la lista completa en memoria primero
         val listaTrabajadoresAInsertar = listaInvitados.map { emailEmpleado ->
-         Invitaciones(
+         Invitacion(
              email = emailEmpleado,
              empresaId =empresaInsertada.empresaId,
              rol = "TRABAJADOR",
@@ -78,7 +78,7 @@ suspend fun registrarJefeYEmpresa(
         // 1. Buscamos si el correo existe previamente en la tabla de invitaciones
         val invitado = supabase.postgrest["invitaciones"]
             .select { filter { eq("email", email) } }
-            .decodeSingleOrNull<Invitaciones>()
+            .decodeSingleOrNull<Invitacion>()
 
         if (invitado == null) {
             throw Exception("Este correo no está autorizado por ninguna empresa.")

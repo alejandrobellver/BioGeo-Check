@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Trabajador(
-    @SerialName("trabajador_id") val trabajadorId: String, // Este será el uid de Supabase Auth
+    @SerialName("trabajador_id") val trabajadorId: String,
     @SerialName("empresa_id") val empresaId: String,
     @SerialName("departamento_id") val departamentoId: String? = null,
     @SerialName("contrato_id") val contratoId: String? = null,
-    val nombre: String? = null,
-    val apellidos: String? = null,
-    val dni: String? = null,
-    val email: String,
-    val rol: String = "TRABAJADOR" // Puede ser "JEFE" o "TRABAJADOR"
+    @SerialName("nombre") val nombre: String? = null,
+    @SerialName("apellidos") val apellidos: String? = null,
+    @SerialName("dni") val dni: String? = null,
+    @SerialName("email") val email: String,
+    @SerialName("rol") val rol: String = "TRABAJADOR"
 )
