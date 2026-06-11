@@ -2,6 +2,11 @@ package com.example.biogeo_check.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -166,32 +171,145 @@ fun LoginView(vm: AuthViewModel, color: Color) {
 
 @Composable
 fun RegistroJefeView(vm: AuthViewModel, color: Color) {
-    var email by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
+    // 1. Estados de la Empresa
     var nombreEmpresa by remember { mutableStateOf("") }
     var cif by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
 
-    Column {
-        Text("Registrar Nueva Empresa", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+    // 2. Estados de los datos personales del Jefe
+    var nombreJefe by remember { mutableStateOf("") }
+    var apellidosJefe by remember { mutableStateOf("") }
+    var dniJefe by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var pass by remember { mutableStateOf("") }
+
+    // 3. Estados para la gestión de invitados
+    var correoInvitadoTmp by remember { mutableStateOf("") }
+    var listaInvitados by remember { mutableStateOf(listOf<String>()) }
+
+    // ScrollState para evitar que la pantalla desborde con tantos campos
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(bottom = 32.dp) // Margen extra abajo para respirar
+    ) {
+        Text(
+            text = "Registrar Nueva Empresa",
+            color = Color.White,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // ==========================================
+        // SECCIÓN A: DATOS DE LA EMPRESA
+        // ==========================================
+        Text("Datos de la Empresa", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(value = nombreEmpresa, onValueChange = { nombreEmpresa = it }, label = { Text("Nombre de la Empresa") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = cif, onValueChange = { cif = it }, label = { Text("CIF") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = direccion, onValueChange = { direccion = it }, label = { Text("Dirección") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ==========================================
+        // SECCIÓN B: DATOS DEL ADMINISTRADOR (JEFE)
+        // ==========================================
+        Text("Datos del Administrador", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email del Jefe") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+        OutlinedTextField(value = nombreJefe, onValueChange = { nombreJefe = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = apellidosJefe, onValueChange = { apellidosJefe = it }, label = { Text("Apellidos") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = dniJefe, onValueChange = { dniJefe = it }, label = { Text("DNI / NIE") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email Corporativo") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = pass, onValueChange = { pass = it }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), singleLine = true)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ==========================================
+        // SECCIÓN C: INVITAR EMPLEADOS (DINÁMICO)
+        // ==========================================
+        Text("Pre-cargar Empleados (Invitados)", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = correoInvitadoTmp,
+                onValueChange = { correoInvitadoTmp = it },
+                label = { Text("Correo del empleado") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = {
+                    if (correoInvitadoTmp.isNotBlank() && !listaInvitados.contains(correoInvitadoTmp)) {
+                        listaInvitados = listaInvitados + correoInvitadoTmp
+                        correoInvitadoTmp = "" // Limpiamos la caja de texto
+                    }
+                },
+                colors = IconButtonDefaults.iconButtonColors(containerColor = color)
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir", tint = Color.Black)
+            }
+        }
+
+        // Pintar la lista de correos que ya se han añadido abajo en pequeñito
+        Spacer(modifier = Modifier.height(8.dp))
+        listaInvitados.forEach { invitado ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = invitado, color = Color.LightGray, fontSize = 14.sp)
+                IconButton(
+                    onClick = { listaInvitados = listaInvitados - invitado },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
+                }
+            }
+        }
+
+        // ==========================================
+        // BOTÓN DE ACCIÓN FINAL
+        // ==========================================
+        Spacer(modifier = Modifier.height(32.dp))
         Button(
-            onClick = { vm.registrarJefeYEmpresa(email, pass, nombreEmpresa, cif, direccion) },
+            onClick = {
+                // 🚀 Enviamos absolutamente todos los campos ordenados a tu ViewModel
+                vm.registrarJefeYEmpresa(
+                    email = email,
+                    contrasena = pass,
+                    nombreEmpresa = nombreEmpresa,
+                    cif = cif,
+                    direccion = direccion,
+                    nombreJefe = nombreJefe,
+                    apellidosJefe = apellidosJefe,
+                    dniJefe = dniJefe,
+                    listaInvitados = listaInvitados
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(color)
         ) {
-            Text("Crear Empresa y Administrador")
+            Text("Crear Empresa y Administrador", fontWeight = FontWeight.Bold)
         }
     }
 }

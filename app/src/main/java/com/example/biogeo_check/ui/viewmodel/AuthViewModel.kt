@@ -45,16 +45,39 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun registrarJefeYEmpresa(email: String, contrasena: String, nombreEmpresa: String, cif: String, direccion: String) {
+    fun registrarJefeYEmpresa(
+        email: String,
+        contrasena: String,
+        nombreEmpresa: String,
+        cif: String,
+        direccion: String,
+        nombreJefe: String,
+        apellidosJefe: String,
+        dniJefe: String,
+        listaInvitados: List<String> // 👈 Añadimos los nuevos parámetros
+    ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                repository.registrarJefeYEmpresa(email, contrasena, nombreEmpresa, cif, direccion)
-                // Como el registro de jefe no devuelve el objeto trabajador directamente en nuestra función,
-                // podemos pasar un Success genérico y que la UI le diga "Inicia sesión ahora"
-                _authState.value = AuthState.Success(null)
+                // 🚀 Se los pasamos todos al repositorio optimizado
+                repository.registrarJefeYEmpresa(
+                    email = email,
+                    contrasena = contrasena,
+                    nombreEmpresa = nombreEmpresa,
+                    cif = cif,
+                    direccion = direccion,
+                    nombreJefe = nombreJefe,
+                    apellidosJefe = apellidosJefe,
+                    dniJefe = dniJefe,
+                    listaInvitados = listaInvitados
+                )
+
+                // Si todo va bien, pasamos al estado de éxito
+                _authState.value = AuthState.Success
+
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Error al registrar la empresa")
+                // Si algo falla (ej: el CIF ya existe o el correo está mal), capturamos el error
+                _authState.value = AuthState.Error(e.message ?: "Error desconocido al registrar")
             }
         }
     }
