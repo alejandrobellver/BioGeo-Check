@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 data class TipoContrato(
     @SerialName("contrato_id") val contratoId: String = "",
     @SerialName("nombre_contrato") val nombreContrato: String,
-    @SerialName("horas_semanales") val horasSemanales: Int,
-    val descanso: Int
+    @SerialName("horas_semanales") val horasSemanales: Int? = null,
+    @SerialName("descanso") val descanso: Int? = null
 )
