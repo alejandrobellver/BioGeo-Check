@@ -14,7 +14,11 @@ suspend fun registrarJefeYEmpresa(
     contrasena: String,
     nombreEmpresa: String,
     cif: String,
-    direccion: String
+    direccion: String,
+    nombreJefe: String,
+    apellidosJefe: String,
+    dniJefe: String,
+    listaInvitados: List<String>
 ) {
         // 1. Registrar al usuario en Supabase Auth
         val authResponse = supabase.auth.signUpWith(Email) {
@@ -39,10 +43,31 @@ suspend fun registrarJefeYEmpresa(
         val nuevoJefe = Trabajador(
             trabajadorId = userId,
             empresaId = empresaInsertada.empresaId,
+            nombre = nombreJefe,
+            apellidos = apellidosJefe,
+            dni = dniJefe,
             email = email,
             rol = "JEFE"
         )
         supabase.postgrest["trabajador"].insert(nuevoJefe)
+
+        // 4.  OPTIMIZACIÓN: Creamos la lista completa en memoria primero
+        val listaTrabajadoresAInsertar = listaInvitados.map { emailEmpleado ->
+        Trabajador(
+            trabajadorId = java.util.UUID.randomUUID().toString(), // UID temporal
+            empresaId = empresaInsertada.empresaId,
+            nombre = null,
+            apellidos = null,
+            dni = null,
+            email = emailEmpleado,
+            rol = "TRABAJADOR"
+        )
+    }
+
+// 🚀 Un único viaje a internet: Supabase recibe la lista entera y la inserta de golpe
+    if (listaTrabajadoresAInsertar.isNotEmpty()) {
+        supabase.postgrest["trabajador"].insert(listaTrabajadoresAInsertar)
+    }
     }
 
     suspend fun activarCuentaTrabajador(email: String, contrasena: String) {
