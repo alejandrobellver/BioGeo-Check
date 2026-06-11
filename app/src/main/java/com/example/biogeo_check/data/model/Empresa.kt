@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Empresa(
-    @SerialName("empresa_id") val empresaId: String = "",
+    @SerialName("id") val empresaId: String = "",
     @SerialName("nombre_empresa") val nombreEmpresa: String,
     val cif: String,
     @SerialName("fecha_creacion") val fechaCreacion: String? = null,

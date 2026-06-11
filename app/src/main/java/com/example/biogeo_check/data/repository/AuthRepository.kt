@@ -1,6 +1,7 @@
 package com.example.biogeo_check.data.repository
 
 import com.example.biogeo_check.data.model.Empresa
+import com.example.biogeo_check.data.model.Invitaciones
 import com.example.biogeo_check.data.model.Trabajador
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.auth
@@ -51,49 +52,61 @@ suspend fun registrarJefeYEmpresa(
         )
         supabase.postgrest["trabajador"].insert(nuevoJefe)
 
+
         // 4.  OPTIMIZACIÓN: Creamos la lista completa en memoria primero
         val listaTrabajadoresAInsertar = listaInvitados.map { emailEmpleado ->
-        Trabajador(
-            trabajadorId = java.util.UUID.randomUUID().toString(), // UID temporal
-            empresaId = empresaInsertada.empresaId,
-            nombre = null,
-            apellidos = null,
-            dni = null,
-            email = emailEmpleado,
-            rol = "TRABAJADOR"
-        )
+         Invitaciones(
+             email = emailEmpleado,
+             empresaId =empresaInsertada.empresaId,
+             rol = "TRABAJADOR",
+         )
     }
 
 // 🚀 Un único viaje a internet: Supabase recibe la lista entera y la inserta de golpe
     if (listaTrabajadoresAInsertar.isNotEmpty()) {
-        supabase.postgrest["trabajador"].insert(listaTrabajadoresAInsertar)
+        supabase.postgrest["invitaciones"].insert(listaTrabajadoresAInsertar)
     }
     }
 
-    suspend fun activarCuentaTrabajador(email: String, contrasena: String) {
-        // 1. Buscamos si el correo existe previamente en la tabla
-        val trabajadorPrevio = supabase.postgrest["trabajador"]
+    suspend fun activarCuentaTrabajador(
+        email: String,
+        contrasena: String,
+        nombre: String,       // 🚀 NUEVO: Viene de la UI
+        apellidos: String,    // 🚀 NUEVO
+        dni: String           // 🚀 NUEVO
+    ) {
+        // 1. Buscamos si el correo existe previamente en la tabla de invitaciones
+        val invitado = supabase.postgrest["invitaciones"]
             .select { filter { eq("email", email) } }
-            .decodeSingleOrNull<Trabajador>()
+            .decodeSingleOrNull<Invitaciones>()
 
-        // Si no existe, lanzamos un error para detener el proceso
-        if (trabajadorPrevio == null) {
+        if (invitado == null) {
             throw Exception("Este correo no está autorizado por ninguna empresa.")
         }
 
-        // 2. Si existe, creamos su cuenta definitiva con su contraseña en Auth
+        // 2. Creamos su cuenta en Supabase Auth
         val authResponse = supabase.auth.signUpWith(Email) {
             this.email = email
             password = contrasena
         }
-        val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear la cuenta en Auth")
+        val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
 
-        // 3. Hacemos el UPDATE en la tabla para guardar su ID real
-        supabase.postgrest["trabajador"].update(
-            {
-                set("trabajador_id", nuevoUserId)
-            }
-        ) {
+        //val nuevoUserId = authResponse.user?.id ?: throw Exception("Error al crear la cuenta en Auth")
+
+        // 3. Insertamos en la tabla trabajador con los datos reales de la UI 🌟
+        val nuevoTrabajador = Trabajador(
+            trabajadorId = nuevoUserId,
+            empresaId = invitado.empresaId,
+            nombre = nombre,       // 👈 Mapeado con lo que escribió el usuario
+            apellidos = apellidos, // 👈 Mapeado
+            dni = dni,             // 👈 Mapeado
+            email = email,
+            rol = invitado.rol
+        )
+        supabase.postgrest["trabajador"].insert(nuevoTrabajador)
+
+        // 4. Borramos la invitación
+        supabase.postgrest["invitaciones"].delete {
             filter { eq("email", email) }
         }
     }

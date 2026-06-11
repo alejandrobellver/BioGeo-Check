@@ -2,6 +2,11 @@ package com.example.biogeo_check.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,27 +21,32 @@ import com.example.biogeo_check.ui.viewmodel.AuthState
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 
 @Composable
-fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
-    // 1. Observamos el estado del semáforo desde el ViewModel
+fun AuthMasterScreen(
+    viewModel: AuthViewModel = viewModel(),
+    onNavigateToDashboard: (isJefe: Boolean) -> Unit = {}
+) {
     val state by viewModel.authState.collectAsState()
+    var currentTab by remember { mutableStateOf(0) }
 
-    // Estado local para navegar entre las 3 pantallas de prueba
-    var currentTab by remember { mutableStateOf(0) } // 0: Login, 1: Registro Jefe, 2: Activación
-
-    // Colores Emerald & Dark
     val emerald = Color(0xFF10B981)
     val background = Color(0xFF121212)
     val surface = Color(0xFF708090)
+
+    // 🌟 NUEVO: El scroll ahora vive aquí, en la pantalla principal
+    val mainScrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(background)
-            .padding(24.dp)
+            .padding(horizontal = 24.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(mainScrollState) // 🚀 Aplicamos el scroll a TODA la pantalla
+                .padding(bottom = 48.dp) // Espacio al final para que respiren los mensajes
         ) {
 
             // TÍTULO
@@ -56,7 +66,7 @@ fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
                 Button(
                     onClick = {
                         currentTab = 0
-                        viewModel.resetState() // Limpiamos errores al cambiar de pestaña
+                        viewModel.resetState()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = if(currentTab == 0) emerald else Color.DarkGray)
                 ) { Text("Login") }
@@ -88,7 +98,7 @@ fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     when (currentTab) {
                         0 -> LoginView(viewModel, emerald)
-                        1 -> RegistroJefeView(viewModel, emerald)
+                        1 -> RegistroJefeView(viewModel, emerald) // 👈 Ya no desborda internamente
                         2 -> ActivacionTrabajadorView(viewModel, emerald)
                     }
                 }
@@ -96,21 +106,27 @@ fun AuthMasterScreen(viewModel: AuthViewModel = viewModel()) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // GESTIÓN VISUAL DEL ESTADO (UI REACCIONANDO AL VIEWMODEL)
+            // GESTIÓN VISUAL DEL ESTADO (¡Ahora siempre visible al bajar el scroll!)
             when (state) {
                 is AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))
                 }
                 is AuthState.Error -> {
                     val mensajeError = (state as AuthState.Error).mensaje
-                    Text(text = "❌ Error: $mensajeError", color = Color(0xFFEF4444), modifier = Modifier.padding(20.dp))
+                    Text(text = "❌ Error: $mensajeError", color = Color(0xFFEF4444), modifier = Modifier.padding(20.dp), fontWeight = FontWeight.Bold)
                 }
                 is AuthState.Success -> {
-                    Text(text = "✅ ¡Operación Exitosa!", color = emerald, fontWeight = FontWeight.Bold, modifier = Modifier.padding(20.dp))
+                    val trabajador = (state as AuthState.Success).trabajador
+                    if (trabajador != null) {
+                        LaunchedEffect(Unit) {
+                            onNavigateToDashboard(trabajador.rol == "JEFE")
+                            viewModel.resetState()
+                        }
+                    } else {
+                        Text(text = "✅ ¡Operación Exitosa! Por favor, inicia sesión.", color = emerald, fontWeight = FontWeight.Bold, modifier = Modifier.padding(20.dp))
+                    }
                 }
-                is AuthState.Idle -> {
-                    // No mostramos nada, esperando a que el usuario haga algo
-                }
+                is AuthState.Idle -> {}
             }
         }
     }
@@ -126,28 +142,11 @@ fun LoginView(vm: AuthViewModel, color: Color) {
     Column {
         Text("Acceso Diario", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = pass,
-            onValueChange = { pass = it },
-            label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
-        )
+        OutlinedTextField(value = pass, onValueChange = { pass = it }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), singleLine = true)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { vm.login(email, pass) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(color)
-        ) {
+        Button(onClick = { vm.login(email, pass) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(color)) {
             Text("Iniciar Sesión")
         }
     }
@@ -155,33 +154,80 @@ fun LoginView(vm: AuthViewModel, color: Color) {
 
 @Composable
 fun RegistroJefeView(vm: AuthViewModel, color: Color) {
-    var email by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
     var nombreEmpresa by remember { mutableStateOf("") }
     var cif by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
+    var nombreJefe by remember { mutableStateOf("") }
+    var apellidosJefe by remember { mutableStateOf("") }
+    var dniJefe by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var pass by remember { mutableStateOf("") }
+    var correoInvitadoTmp by remember { mutableStateOf("") }
+    var listaInvitados by remember { mutableStateOf(listOf<String>()) }
 
-    Column {
-        Text("Registrar Nueva Empresa", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+    // 🚀 MODIFICACIÓN: Quitamos fillMaxSize y verticalScroll de aquí para heredar el del padre de forma limpia
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Registrar Nueva Empresa", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
 
+        Text("Datos de la Empresa", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = nombreEmpresa, onValueChange = { nombreEmpresa = it }, label = { Text("Nombre de la Empresa") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = cif, onValueChange = { cif = it }, label = { Text("CIF") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = direccion, onValueChange = { direccion = it }, label = { Text("Dirección") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Datos del Administrador", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email del Jefe") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        OutlinedTextField(value = nombreJefe, onValueChange = { nombreJefe = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = apellidosJefe, onValueChange = { apellidosJefe = it }, label = { Text("Apellidos") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = dniJefe, onValueChange = { dniJefe = it }, label = { Text("DNI / NIE") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email Corporativo") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(value = pass, onValueChange = { pass = it }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), singleLine = true)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Pre-cargar Empleados (Invitados)", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(value = correoInvitadoTmp, onValueChange = { correoInvitadoTmp = it }, label = { Text("Correo del empleado") }, modifier = Modifier.weight(1f), singleLine = true)
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = {
+                    if (correoInvitadoTmp.isNotBlank() && !listaInvitados.contains(correoInvitadoTmp)) {
+                        listaInvitados = listaInvitados + correoInvitadoTmp
+                        correoInvitadoTmp = ""
+                    }
+                },
+                colors = IconButtonDefaults.iconButtonColors(containerColor = color)
+            ) { Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir", tint = Color.Black) }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        listaInvitados.forEach { invitado ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = invitado, color = Color.LightGray, fontSize = 14.sp)
+                IconButton(onClick = { listaInvitados = listaInvitados - invitado }, modifier = Modifier.size(24.dp)) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Red)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
         Button(
-            onClick = { vm.registrarJefeYEmpresa(email, pass, nombreEmpresa, cif, direccion) },
+            onClick = {
+                vm.registrarJefeYEmpresa(email, pass, nombreEmpresa, cif, direccion, nombreJefe, apellidosJefe, dniJefe, listaInvitados)
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(color)
-        ) {
-            Text("Crear Empresa y Administrador")
-        }
+        ) { Text("Crear Empresa y Administrador", fontWeight = FontWeight.Bold) }
     }
 }
 
@@ -189,21 +235,29 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
 fun ActivacionTrabajadorView(vm: AuthViewModel, color: Color) {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var apellidos by remember { mutableStateOf("") }
+    var dni by remember { mutableStateOf("") }
+
+
 
     Column {
         Text("Activar Cuenta de Trabajador", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
-        Text("Usa el email con el que tu jefe te registró.", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 16.dp))
+        Text("Usa el email con el que tu jefe te registró.", color = Color.Black, fontSize = 14.sp, modifier = Modifier.padding(bottom = 16.dp))
 
         OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email de la empresa") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
         Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(value = pass, onValueChange = { pass = it }, label = { Text("Crea tu Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), singleLine = true)
+        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre Trabajador") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(value = apellidos, onValueChange = { apellidos = it }, label = { Text("Apellidos Trabajador") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = dni, onValueChange = { dni = it }, label = { Text("DNI Trabajador") }, modifier = Modifier.fillMaxWidth(),  singleLine = true)
 
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { vm.activarCuentaTrabajador(email, pass) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(color)
-        ) {
+        Button(onClick = { vm.activarCuentaTrabajador(email, pass, nombre, apellidos, dni) }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(color)) {
             Text("Activar mi cuenta")
         }
     }
