@@ -25,15 +25,17 @@ import androidx.compose.ui.unit.sp
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.theme.*
+import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
-    vm: `DashboardViewModel.kt`,
+    vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit,
     onLogout: () -> Unit
 ) {
-    // 🏁 Dispara el "Join lógico" en internet nada más abrir la pantalla
+
     LaunchedEffect(Unit) {
         vm.cargarDatosPerfil()
     }
@@ -51,12 +53,12 @@ fun UserProfileScreen(
             modifier = Modifier
                 .weight(1f)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Permite scroll si el teclado o los campos no caben
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Avatar (Tu diseño original)
+
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -74,7 +76,7 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nombre
+
             Text(
                 text = "${trabajador?.nombre ?: "Cargando..."} ${trabajador?.apellidos ?: ""}",
                 color = PrimaryTextWhite,
@@ -83,7 +85,7 @@ fun UserProfileScreen(
                 fontFamily = FontFamily.SansSerif
             )
 
-            // 🏢 Nombre de su Departamento real
+
             Text(
                 text = depto?.nombreDepartamento ?: "Sin departamento asignado",
                 color = SecondaryTextGray,
@@ -93,7 +95,7 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 🆔 Meta-información del Rol de sistema
+
             Text(
                 text = "Rol de acceso: ${trabajador?.rol ?: "DESCONOCIDO"}",
                 color = Color(0xFF666666),
@@ -103,13 +105,13 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 📝 CARD 1: INFORMACIÓN PERSONAL (CORREO Y DEPARTAMENTO EDITABLES)
+
             ProfileCard(
                 title = "Información Personal",
                 actionIcon = true,
-                onActionClick = { vm.editMode = !vm.editMode } // Al pulsar el lápiz cambia el modo
+                onActionClick = { vm.editMode = !vm.editMode }
             ) {
-                // Campo Correo Electrónico
+
                 if (vm.editMode) {
                     Column {
                         Text(text = "Correo electrónico", color = SecondaryTextGray, fontSize = 12.sp)
@@ -133,7 +135,7 @@ fun UserProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Campo Departamento (Desplegable interactivo en modo edición)
+
                 if (vm.editMode) {
                     var expanded by remember { mutableStateOf(false) }
                     val deptoSeleccionadoTexto = vm.listaDepartamentos.find { it.departamentoId == vm.deptoSeleccionadoId }?.nombreDepartamento ?: "Seleccionar departamento..."
@@ -175,7 +177,7 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-// 📜 CARD 2: ESTADÍSTICAS DE TRABAJO (CALCADO EXACTO DE DEPARTAMENTO)
+
             ProfileCard(
                 title = "Estadísticas de Trabajo",
                 actionIcon = true,
@@ -247,7 +249,7 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Enlace estético de Cambiar Contraseña (Tu diseño)
+
             Text(
                 text = "Cambiar Contraseña",
                 color = EmeraldGreen,
@@ -260,7 +262,7 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 💾 BOTÓN INFERIOR DINÁMICO (Guardar si edita / Cerrar Sesión si no)
+
             if (vm.editMode) {
                 Button(
                     onClick = { vm.guardarCambiosPerfil() },

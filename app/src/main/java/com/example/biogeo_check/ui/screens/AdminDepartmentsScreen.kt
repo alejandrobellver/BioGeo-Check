@@ -25,11 +25,18 @@ import com.example.biogeo_check.data.model.Departamento
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.theme.*
+import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun AdminDepartmentsScreen(
+    vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        vm.cargarDatosIniciales()
+    }
     // Dummy state for demonstration
     var showCreateDialog by remember { mutableStateOf(false) }
     var selectedDepartment by remember { mutableStateOf<Departamento?>(null) }

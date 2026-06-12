@@ -16,7 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.biogeo_check.data.network.SupabaseClient
 import com.example.biogeo_check.data.repository.AuthRepository
-import com.example.biogeo_check.data.repository.FichajeRepository // 🚀 IMPORTANTE: Asegúrate de tener este import
+import com.example.biogeo_check.data.repository.FichajeRepository
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.screens.AdminDashboardScreen
 import com.example.biogeo_check.ui.screens.AdminDepartmentsScreen
@@ -25,14 +25,14 @@ import com.example.biogeo_check.ui.screens.EmployeeDashboardScreen
 import com.example.biogeo_check.ui.screens.LegalScreen
 import com.example.biogeo_check.ui.screens.UserProfileScreen
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
+import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializamos los dos repositorios compartidos en la raíz
         val authRepository = AuthRepository(SupabaseClient.client)
-        val fichajeRepository = FichajeRepository(SupabaseClient.client) // 🚀 Creado aquí
+        val fichajeRepository = FichajeRepository(SupabaseClient.client)
 
         setContent {
             MaterialTheme {
@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 1. Fabricamos el AuthViewModel (Tu código)
                     val authViewModelFactory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -49,17 +48,15 @@ class MainActivity : ComponentActivity() {
                     }
                     val authViewModel: AuthViewModel = viewModel(factory = authViewModelFactory)
 
-                    // 🚀 2. Fabricamos el DashboardViewModel unificado al mismo nivel
-                    val `dashboardViewModel.ktFactory` = object : ViewModelProvider.Factory {
+                    val dashboardViewModelFactory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return `DashboardViewModel.kt`(fichajeRepository) as T
+                            return DashboardViewModel(fichajeRepository) as T
                         }
                     }
-                    val `dashboardViewModel.kt`: `DashboardViewModel.kt` = viewModel(factory = `dashboardViewModel.ktFactory`)
+                    val dashboardViewModel: DashboardViewModel = viewModel(factory = dashboardViewModelFactory)
 
-                    // 🚀 3. Le pasamos AMBOS ViewModels a la navegación
-                    AppNavigation(authViewModel = authViewModel, `dashboardViewModel.kt` = `dashboardViewModel.kt`)
+                    AppNavigation(authViewModel = authViewModel, dashboardViewModel = dashboardViewModel)
                 }
             }
         }
@@ -69,7 +66,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     authViewModel: AuthViewModel,
-    `dashboardViewModel.kt`: `DashboardViewModel.kt` // 🚀 4. Al añadirlo aquí como parámetro, el error desaparece por completo
+    dashboardViewModel: DashboardViewModel
 ) {
     val navController = rememberNavController()
 
@@ -99,11 +96,11 @@ fun AppNavigation(
 
         composable("employee_dashboard") {
             EmployeeDashboardScreen(
-                vm = `dashboardViewModel.kt`, // 🚀 Ya no sale en rojo porque ya sabe qué es
+                vm = dashboardViewModel,
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("employee_dashboard")
-                        NavScreen.HISTORY -> { /* Empleados no tienen departamentos */ }
+                        NavScreen.HISTORY -> { }
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -112,6 +109,7 @@ fun AppNavigation(
 
         composable("admin_dashboard") {
             AdminDashboardScreen(
+                vm = dashboardViewModel,
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("admin_dashboard")
@@ -124,6 +122,7 @@ fun AppNavigation(
 
         composable("admin_departments") {
             AdminDepartmentsScreen(
+                vm = dashboardViewModel,
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("admin_dashboard")
@@ -136,7 +135,7 @@ fun AppNavigation(
 
         composable("user_profile") {
             UserProfileScreen(
-                vm = `dashboardViewModel.kt`,
+                vm = dashboardViewModel,
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.popBackStack()

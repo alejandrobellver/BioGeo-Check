@@ -5,10 +5,19 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Fichaje(
-    @SerialName("fichaje_id") val fichajeId: String = "",
+    @SerialName("fichaje_id") val fichajeId: String? = null,
     @SerialName("trabajador_id") val trabajadorId: String,
     @SerialName("hora_fichaje") val horaFichaje: String? = null,
-    @SerialName("tipo_accion") val tipoAccion: String, // "ENTRADA", "INICIO_DESCANSO", etc.
+    @SerialName("tipo_accion") val tipoAccion: String,
+    val latitud: Double? = null,
+    val longitud: Double? = null
+)
+
+@Serializable
+data class FichajeInsert(
+    @SerialName("trabajador_id") val trabajadorId: String,
+    @SerialName("hora_fichaje") val horaFichaje: String,
+    @SerialName("tipo_accion") val tipoAccion: String,
     val latitud: Double,
     val longitud: Double
 )

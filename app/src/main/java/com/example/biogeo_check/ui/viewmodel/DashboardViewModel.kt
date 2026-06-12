@@ -12,27 +12,26 @@ import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.data.repository.FichajeRepository
 import kotlinx.coroutines.launch
 
-class `DashboardViewModel.kt`(
+class DashboardViewModel(
     private val fichajeRepository: FichajeRepository
 ) : ViewModel() {
 
-    // 📋 Estados del Dashboard (Simples y fijos de momento)
     var trabajadorActual by mutableStateOf<Trabajador?>(null)
     var ultimoFichaje by mutableStateOf<Fichaje?>(null)
     var listaContratos by mutableStateOf<List<TipoContrato>>(listOf())
     var contratoSeleccionadoId by mutableStateOf<String?>(null)
+    var tiempoTrabajadoHoy by mutableStateOf("00:00")
+    var tiempoTrabajadoSemana by mutableStateOf("00:00")
+    var errorMessage by mutableStateOf<String?>(null)
 
-    // 👤 Estados de las tablas relacionadas (El Join Lógico)
     var departamento by mutableStateOf<Departamento?>(null)
     var tipoContrato by mutableStateOf<TipoContrato?>(null)
     var listaDepartamentos by mutableStateOf<List<Departamento>>(listOf())
 
-    // 📝 Estados de los campos editables del Perfil
     var emailInput by mutableStateOf("")
     var deptoSeleccionadoId by mutableStateOf<String?>(null)
     var editMode by mutableStateOf(false)
 
-    // 🔍 1. Carga inicial del Dashboard al abrir la App
     fun cargarDatosIniciales() {
         viewModelScope.launch {
             try {
@@ -42,6 +41,7 @@ class `DashboardViewModel.kt`(
 
                 trabajadorActual?.let {
                     ultimoFichaje = fichajeRepository.obtenerUltimoFichaje(it.trabajadorId)
+                    calcularTiempoTrabajadoHoy()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -49,25 +49,64 @@ class `DashboardViewModel.kt`(
         }
     }
 
-    // ⏱️ 2. Acción del botón de fichar Entrada/Salida
-    fun alternarFichaje() {
-        val trabajador = trabajadorActual ?: return
+    private fun calcularTiempoTrabajadoHoy() {
+        val tId = trabajadorActual?.trabajadorId ?: return
         viewModelScope.launch {
             try {
-                val siguienteAccion = if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
-                val nuevoLog = fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
-                ultimoFichaje = nuevoLog
+                val fichajes = fichajeRepository.obtenerFichajesDeHoy(tId)
+                var totalSegundos = 0L
+                var entradaParcial: java.time.Instant? = null
+
+                for (f in fichajes) {
+                    val hora = f.horaFichaje?.let { java.time.Instant.parse(it) } ?: continue
+                    if (f.tipoAccion == "ENTRADA") {
+                        entradaParcial = hora
+                    } else if (f.tipoAccion == "SALIDA" && entradaParcial != null) {
+                        totalSegundos += java.time.Duration.between(entradaParcial, hora).seconds
+                        entradaParcial = null
+                    }
+                }
+                
+                // Si está trabajando ahora mismo, sumamos el tiempo desde la última entrada hasta ahora
+                if (entradaParcial != null) {
+                    totalSegundos += java.time.Duration.between(entradaParcial, java.time.Instant.now()).seconds
+                }
+
+                val horas = totalSegundos / 3600
+                val minutos = (totalSegundos % 3600) / 60
+                tiempoTrabajadoHoy = String.format("%02d:%02d", horas, minutos)
+                
+                // Temporalmente, hacemos que la semana sea igual al día para que no ponga 10.10,
+                // idealmente haríamos otra consulta obtenerFichajesDeSemana()
+                tiempoTrabajadoSemana = tiempoTrabajadoHoy
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    // 👤 3. Carga los detalles extra cuando el usuario pulsa en la pestaña de Perfil (El Join)
-// 👤 Carga los detalles del perfil de forma aislada y ultra-defensiva
+    fun alternarFichaje() {
+        val trabajador = trabajadorActual
+        if (trabajador == null) {
+            errorMessage = "Error Crítico: No hay usuario en memoria."
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val siguienteAccion = if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
+                val nuevoLog = fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
+                ultimoFichaje = nuevoLog
+                calcularTiempoTrabajadoHoy()
+                errorMessage = null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                errorMessage = "Error BD: ${e.message}"
+            }
+        }
+    }
+
     fun cargarDatosPerfil() {
         viewModelScope.launch {
-            // 1. Si no tenemos el trabajador en memoria todavía, lo buscamos
             if (trabajadorActual == null) {
                 try {
                     val userId = fichajeRepository.obtenerIdUsuarioAutenticado()
@@ -81,26 +120,22 @@ class `DashboardViewModel.kt`(
 
             val t = trabajadorActual ?: return@launch
 
-            // Inicializamos los inputs de la pantalla de inmediato
             emailInput = t.email
             deptoSeleccionadoId = t.departamentoId
             contratoSeleccionadoId = t.contratoId
 
-            // 🏢 BLOQUE A: Traer el Departamento individual de Santos
             try {
                 t.departamentoId?.let { departamento = fichajeRepository.obtenerDepartamento(it) }
             } catch (e: Exception) {
                 println("❌ Error en departamento individual: ${e.message}")
             }
 
-            // 📜 BLOQUE B: Traer el Contrato individual de Santos (Primera foto)
             try {
                 t.contratoId?.let { tipoContrato = fichajeRepository.obtenerTipoContrato(it) }
             } catch (e: Exception) {
                 println("❌ Error en contrato individual: ${e.message}")
             }
 
-            // 🗺️ BLOQUE C: Traer la LISTA completa de departamentos
             try {
                 listaDepartamentos = fichajeRepository.obtenerTodosLosDepartamentos()
                 println("🏢 LISTA DE DEPARTAMENTOS CARGADA: ${listaDepartamentos.size} encontrados")
@@ -108,23 +143,20 @@ class `DashboardViewModel.kt`(
                 println("❌ Error cargando LISTA de departamentos: ${e.message}")
             }
 
-            // 📜 BLOQUE D: Traer la LISTA completa de contratos (El desplegable que se resiste)
             try {
                 listaContratos = fichajeRepository.obtenerTodosLosContratos()
                 println("📜 LISTA DE CONTRATOS CARGADA: ${listaContratos.size} encontrados")
             } catch (e: Exception) {
                 println("❌ ERROR CRÍTICO CARGANDO LISTA DE CONTRATOS: El modelo TipoContrato no coincide con Supabase")
-                e.printStackTrace() // 👈 Este chivato nos dirá en el Logcat qué columna está fallando
+                e.printStackTrace()
             }
         }
     }
 
-    // 💾 4. Guarda los cambios del perfil en Supabase y actualiza la interfaz
     fun guardarCambiosPerfil() {
         val tId = trabajadorActual?.trabajadorId ?: return
         viewModelScope.launch {
             try {
-                // 🚀 El cambio está aquí: antes pasabas 3 datos, ahora le sumas ', contratoSeleccionadoId' al final
                 fichajeRepository.actualizarTrabajador(tId, emailInput, deptoSeleccionadoId, contratoSeleccionadoId)
 
                 editMode = false
