@@ -20,22 +20,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.theme.*
+import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 
 @Composable
 fun EmployeeDashboardScreen(
-    vm: `DashboardViewModel.kt` = viewModel(), // 🚀 Inyectamos tu ViewModel simplificado
+    vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
-    // 1. Extraemos los estados dinámicos del ViewModel
     val trabajador = vm.trabajadorActual
-    val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA" // Lee el último log de Supabase
+    val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
 
-    // 2.  ACTIVADOR DE CARGA: Llama al repositorio nada más abrir la pantalla para traer el perfil y el último fichaje
+
     LaunchedEffect(Unit) {
         vm.cargarDatosIniciales()
     }
 
-   // Importante primer inicio de sesion completamos los datos faltantes
+
     LaunchedEffect(trabajador) {
         if (trabajador != null && trabajador.departamentoId == null) {
             onNavigate(NavScreen.PROFILE)
@@ -54,23 +54,31 @@ fun EmployeeDashboardScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nombre dinámico extraído directamente de la tabla en Supabase
+
             Text(
                 text = "Bienvenido/a, ${trabajador?.nombre ?: "Usuario"}",
                 color = PrimaryTextWhite,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.SansSerif,
-                modifier = Modifier.padding(bottom = 32.dp)
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Clock In/Out Button (Botón de Fichaje Histórico)
+            vm.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = Color(0xFFFF5555),
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = { vm.alternarFichaje() }, // 🚀 Inserta una nueva fila (ENTRADA/SALIDA)
+                    onClick = { vm.alternarFichaje() },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(80.dp),
@@ -91,22 +99,22 @@ fun EmployeeDashboardScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Card 1: Tiempo del día de hoy (Estático temporalmente)
+
             DashboardCard(
                 title = "Tiempo Trabajado Hoy",
-                value = "45:00"
+                value = vm.tiempoTrabajadoHoy
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Card 2: Sumatorio de la semana (Estático temporalmente)
+
             DashboardCard(
                 title = "Total de esta Semana",
-                value = "10.10"
+                value = vm.tiempoTrabajadoSemana
             )
         }
 
-        // Bottom Navigation
+
         BottomNavBar(
             currentScreen = NavScreen.HOME,
             onNavigate = onNavigate
