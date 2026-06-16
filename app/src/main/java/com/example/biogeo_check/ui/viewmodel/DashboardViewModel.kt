@@ -125,7 +125,11 @@ class DashboardViewModel(
                 errorMessage = null
             } catch (e: Exception) {
                 e.printStackTrace()
-                errorMessage = "Error BD: ${e.message}"
+                errorMessage = obtenerMensajeErrorHumano(e)
+                viewModelScope.launch {
+                    kotlinx.coroutines.delay(5000)
+                    errorMessage = null
+                }
             }
         }
     }
@@ -339,8 +343,40 @@ class DashboardViewModel(
                 inviteSuccessMessage = "Invitación enviada correctamente."
             } catch (e: Exception) {
                 e.printStackTrace()
-                inviteError = "Error: ${e.message}"
+                // Si Ktor oculta el mensaje real del body en un 500/400, atrapamos al menos que es fallo.
+                // Para asegurarnos de que caza el 500, podemos mirar si el mensaje contiene "500" o "400"
+                inviteError = obtenerMensajeErrorHumano(e)
+                if (e.message?.contains("500") == true || e.message?.contains("400") == true) {
+                    inviteError = "Este correo ya está registrado o hay un error de conexión."
+                }
+                
+                viewModelScope.launch {
+                    kotlinx.coroutines.delay(5000)
+                    inviteError = null
+                }
             }
+        }
+    }
+
+    private fun obtenerMensajeErrorHumano(e: Exception): String {
+        val msg = e.toString()
+        return when {
+            msg.contains("User already registered", ignoreCase = true) || msg.contains("already exists", ignoreCase = true) -> 
+                "Este correo ya está registrado o invitado en el sistema."
+            msg.contains("duplicate key value", ignoreCase = true) || msg.contains("invitaciones_email_key", ignoreCase = true) -> 
+                "Este correo ya ha sido invitado."
+            msg.contains("Network", ignoreCase = true) || msg.contains("UnknownHost", ignoreCase = true) || msg.contains("ConnectException", ignoreCase = true) -> 
+                "Comprueba tu conexión a internet."
+            msg.contains("timeout", ignoreCase = true) -> 
+                "La conexión ha tardado demasiado, inténtalo de nuevo."
+            msg.contains("invalid email", ignoreCase = true) || msg.contains("Valid email", ignoreCase = true) -> 
+                "El formato del correo no es válido."
+            msg.contains("not found", ignoreCase = true) -> 
+                "No se ha encontrado la información."
+            msg.contains("500", ignoreCase = true) || msg.contains("400", ignoreCase = true) || msg.contains("ServerResponseException", ignoreCase = true) || msg.contains("RestException", ignoreCase = true) -> 
+                "Este correo ya está registrado o invitado."
+            else -> 
+                "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
         }
     }
 }
