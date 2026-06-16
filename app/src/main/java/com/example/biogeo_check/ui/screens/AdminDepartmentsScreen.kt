@@ -3,38 +3,15 @@ package com.example.biogeo_check.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,16 +20,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.data.model.Departamento
 import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
-import com.example.biogeo_check.ui.theme.BlackBackground
-import com.example.biogeo_check.ui.theme.DarkGrayCard
-import com.example.biogeo_check.ui.theme.EmeraldGreen
-import com.example.biogeo_check.ui.theme.PrimaryTextWhite
-import com.example.biogeo_check.ui.theme.SecondaryTextGray
+import com.example.biogeo_check.ui.theme.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 
 @Composable
@@ -60,10 +33,13 @@ fun AdminDepartmentsScreen(
     vm: DepartmentsViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
-    // 🚀 Lanzamos la carga unificada de Base de Datos al entrar
     LaunchedEffect(Unit) {
         vm.cargarDatosDepartamentosYPersonas()
     }
+
+    val listaDepartamentos by vm.listaDepartamentosAdmin.collectAsState()
+    val listaTrabajadores by vm.listaTrabajadoresAdmin.collectAsState()
+    val conteoEmpleados by vm.conteoEmpleadosPorDepto.collectAsState()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var selectedDepartment by remember { mutableStateOf<Departamento?>(null) }
@@ -99,11 +75,7 @@ fun AdminDepartmentsScreen(
                         .background(EmeraldGreen, RoundedCornerShape(8.dp))
                         .size(40.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Crear Departamento",
-                        tint = PrimaryTextWhite
-                    )
+                    Icon(Icons.Default.Add, contentDescription = "Crear Departamento", tint = PrimaryTextWhite)
                 }
             }
 
@@ -113,12 +85,12 @@ fun AdminDepartmentsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 🚀 Conectado al estado del ViewModel
-                items(vm.listaDepartamentosAdmin) { dep ->
+
+                items(listaDepartamentos) { dep ->
                     DepartmentCard(
                         departamento = dep,
-                        // 🚀 Coge el número exacto calculado por el ViewModel
-                        employeeCount = vm.conteoEmpleadosPorDepto[dep.departamentoId] ?: 0,
+
+                        employeeCount = conteoEmpleados[dep.departamentoId] ?: 0,
                         onClick = { selectedDepartment = dep }
                     )
                 }
@@ -126,8 +98,7 @@ fun AdminDepartmentsScreen(
         }
 
         BottomNavBar(
-            currentScreen = NavScreen.DEPARTMENTS,
-            isJefe = true,
+            currentScreen = NavScreen.EMPLOYEES,
             onNavigate = onNavigate
         )
     }
@@ -148,8 +119,8 @@ fun AdminDepartmentsScreen(
     if (selectedDepartment != null) {
         AssignEmployeesDialog(
             departamento = selectedDepartment!!,
-            allEmployees = vm.listaTrabajadoresAdmin, // Le pasamos la lista de trabajadores de la BD
-            allDepartments = vm.listaDepartamentosAdmin, // 🚀 CORREGIDO: Le pasamos también la lista de deptos para validar nombres
+            allEmployees = listaTrabajadores, // 🚀 Pasamos la lista limpia desenvuelta
+            allDepartments = listaDepartamentos, // 🚀 Pasamos la lista limpia desenvuelta
             onDismiss = { selectedDepartment = null },
             onConfirmAssignments = { listaIds ->
                 vm.actualizarEmpleadosDepartamento(selectedDepartment!!.departamentoId, listaIds)
@@ -295,10 +266,7 @@ fun CreateDepartmentDialog(
                         onCreate(datosFormulario)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldGreen,
-                    contentColor = PrimaryTextWhite
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
             ) {
                 Text("Guardar")
             }
@@ -319,11 +287,9 @@ fun AssignEmployeesDialog(
     onDismiss: () -> Unit,
     onConfirmAssignments: (Set<String>) -> Unit
 ) {
-    // Cargamos inicialmente los IDs de las personas que YA pertenecen a este departamento
     var assignedEmployeeIds by remember {
         mutableStateOf(
-            allEmployees.filter { it.departamentoId == departamento.departamentoId }
-                .map { it.trabajadorId }.toSet()
+            allEmployees.filter { it.departamentoId == departamento.departamentoId }.map { it.trabajadorId }.toSet()
         )
     }
 
@@ -333,14 +299,7 @@ fun AssignEmployeesDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DarkGrayCard,
-        title = {
-            Text(
-                "Asignar a ${departamento.nombreDepartamento}",
-                color = EmeraldGreen,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-        },
+        title = { Text("Asignar a ${departamento.nombreDepartamento}", color = EmeraldGreen, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
         text = {
             LazyColumn(modifier = Modifier.fillMaxHeight(0.6f)) {
                 items(allEmployees) { employee ->
@@ -350,26 +309,16 @@ fun AssignEmployeesDialog(
                             .fillMaxWidth()
                             .clickable {
                                 if (isAssigned) {
-                                    // Desmarcar de este departamento siempre es seguro
-                                    assignedEmployeeIds =
-                                        assignedEmployeeIds - employee.trabajadorId
+                                    assignedEmployeeIds = assignedEmployeeIds - employee.trabajadorId
                                 } else {
-                                    // 🔍 BUSQUEDA EXTERNA SEGURA:
-                                    // Comprobamos directamente el depto actual del trabajador en la lista inmutable de la BD
                                     val deptoActualId = employee.departamentoId
 
                                     if (deptoActualId != null && deptoActualId != departamento.departamentoId) {
-                                        // 🚨 BLOQUEO: Si tiene otro depto asignado en la BD, disparamos el pop-up informativo
-                                        val nombreDeptoOcupado =
-                                            allDepartments.find { it.departamentoId == deptoActualId }?.nombreDepartamento
-                                                ?: "otro"
-                                        conflictMessage =
-                                            "${employee.nombre} ya está en el departamento $nombreDeptoOcupado. Debes desasignarlo de allí primero."
+                                        val nombreDeptoOcupado = allDepartments.find { it.departamentoId == deptoActualId }?.nombreDepartamento ?: "otro"
+                                        conflictMessage = "${employee.nombre} ya está en el departamento $nombreDeptoOcupado. Debes desasignarlo de allí primero."
                                         showConflictDialog = true
                                     } else {
-                                        // Si está libre o pertenece a este, se añade al set local
-                                        assignedEmployeeIds =
-                                            assignedEmployeeIds + employee.trabajadorId
+                                        assignedEmployeeIds = assignedEmployeeIds + employee.trabajadorId
                                     }
                                 }
                             }
@@ -377,17 +326,9 @@ fun AssignEmployeesDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "${employee.nombre} ${employee.apellidos ?: ""}",
-                            color = PrimaryTextWhite,
-                            fontSize = 16.sp
-                        )
+                        Text(text = "${employee.nombre} ${employee.apellidos ?: ""}", color = PrimaryTextWhite, fontSize = 16.sp)
                         if (isAssigned) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = "Asignado",
-                                tint = EmeraldGreen
-                            )
+                            Icon(Icons.Default.Check, contentDescription = "Asignado", tint = EmeraldGreen)
                         }
                     }
                     HorizontalDivider(color = Color(0xFF2A2A2A))
@@ -399,10 +340,7 @@ fun AssignEmployeesDialog(
                 onClick = {
                     onConfirmAssignments(assignedEmployeeIds)
                 },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EmeraldGreen,
-                    contentColor = PrimaryTextWhite
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
             ) {
                 Text("Aceptar")
             }
