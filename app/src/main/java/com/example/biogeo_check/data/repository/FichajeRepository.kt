@@ -2,7 +2,6 @@ package com.example.biogeo_check.data.repository
 
 import com.example.biogeo_check.data.model.Departamento
 import com.example.biogeo_check.data.model.Fichaje
-import com.example.biogeo_check.data.model.FichajeInsert
 import com.example.biogeo_check.data.model.TipoContrato
 import com.example.biogeo_check.data.model.Trabajador
 import io.github.jan.supabase.SupabaseClient
@@ -217,7 +216,7 @@ class FichajeRepository(private val supabase: SupabaseClient) {
         sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
         val timestampIso = sdfIso.format(java.util.Date())
 
-        val nuevoRegistro = FichajeInsert(
+        val nuevoRegistro = Fichaje(
             trabajadorId = trabajadorId,
             horaFichaje = timestampIso,
             tipoAccion = tipo,

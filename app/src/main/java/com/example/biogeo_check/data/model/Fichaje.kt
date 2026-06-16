@@ -12,12 +12,3 @@ data class Fichaje(
     val latitud: Double? = null,
     val longitud: Double? = null
 )
-
-@Serializable
-data class FichajeInsert(
-    @SerialName("trabajador_id") val trabajadorId: String,
-    @SerialName("hora_fichaje") val horaFichaje: String,
-    @SerialName("tipo_accion") val tipoAccion: String,
-    val latitud: Double,
-    val longitud: Double
-)
