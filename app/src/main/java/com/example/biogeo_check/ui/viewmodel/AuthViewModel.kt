@@ -93,6 +93,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         nombreEmpresa: String,
         cif: String,
         direccion: String,
+        cp: String,
+        ciudad: String,
         nombreJefe: String,
         apellidosJefe: String,
         dniJefe: String
@@ -106,6 +108,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     nombreEmpresa = nombreEmpresa,
                     cif = cif,
                     direccion = direccion,
+                    cp = cp,
+                    ciudad = ciudad,
                     nombreJefe = nombreJefe,
                     apellidosJefe = apellidosJefe,
                     dniJefe = dniJefe

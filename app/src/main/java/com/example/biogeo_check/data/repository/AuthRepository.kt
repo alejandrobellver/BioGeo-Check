@@ -50,6 +50,8 @@ class AuthRepository(private val supabase: SupabaseClient) {
         nombreEmpresa: String,
         cif: String,
         direccion: String,
+        cp: String,
+        ciudad: String,
         nombreJefe: String,
         apellidosJefe: String,
         dniJefe: String
@@ -57,7 +59,11 @@ class AuthRepository(private val supabase: SupabaseClient) {
         val nuevaEmpresa = Empresa(
             nombreEmpresa = nombreEmpresa,
             cif = cif,
-            direccion = direccion
+            direccion = direccion,
+            cp = cp,
+            ciudad = ciudad,
+            latitud = null,
+            longitud = null
         )
         val empresaInsertada = supabase.postgrest["empresa"]
             .insert(nuevaEmpresa) { select() }

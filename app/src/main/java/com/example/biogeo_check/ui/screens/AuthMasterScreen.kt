@@ -210,13 +210,14 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
     var nombreEmpresa by remember { mutableStateOf("") }
     var cif by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
+    var cp by remember { mutableStateOf("") }
+    var ciudad by remember { mutableStateOf("") }
     var nombreJefe by remember { mutableStateOf("") }
     var apellidosJefe by remember { mutableStateOf("") }
     var dniJefe by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
 
-    // 🚀 MODIFICACIÓN: Quitamos fillMaxSize y verticalScroll de aquí para heredar el del padre de forma limpia
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Registrar Nueva Empresa",
@@ -253,6 +254,22 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
             value = direccion,
             onValueChange = { direccion = it },
             label = { Text("Dirección") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = cp,
+            onValueChange = { cp = it },
+            label = { Text("Código Postal") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = ciudad,
+            onValueChange = { ciudad = it },
+            label = { Text("Ciudad") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -316,6 +333,8 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
                     nombreEmpresa,
                     cif,
                     direccion,
+                    cp,
+                    ciudad,
                     nombreJefe,
                     apellidosJefe,
                     dniJefe

@@ -9,5 +9,9 @@ data class Empresa(
     @SerialName("nombre_empresa") val nombreEmpresa: String,
     val cif: String,
     @SerialName("fecha_creacion") val fechaCreacion: String? = null,
-    val direccion: String
+    val direccion: String,
+    val cp: String,
+    val ciudad: String,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )
