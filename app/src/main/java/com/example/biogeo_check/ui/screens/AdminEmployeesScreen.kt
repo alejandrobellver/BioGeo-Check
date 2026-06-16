@@ -96,7 +96,10 @@ fun AdminDashboardScreen(
                 )
 
                 Button(
-                    onClick = { vm.showInviteDialog = true },
+                    onClick = { 
+                        vm.inviteError = null
+                        vm.showInviteDialog = true 
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -193,7 +196,10 @@ fun AdminDashboardScreen(
         // Invite Dialog
         if (vm.showInviteDialog) {
             AlertDialog(
-                onDismissRequest = { vm.showInviteDialog = false },
+                onDismissRequest = { 
+                    vm.inviteError = null
+                    vm.showInviteDialog = false 
+                },
                 containerColor = DarkGrayCard,
                 title = { Text("Invitar Empleado", color = PrimaryTextWhite) },
                 text = {
@@ -262,7 +268,10 @@ fun AdminDashboardScreen(
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { vm.showInviteDialog = false }) {
+                    OutlinedButton(onClick = { 
+                        vm.inviteError = null
+                        vm.showInviteDialog = false 
+                    }) {
                         Text("Cancelar", color = PrimaryTextWhite)
                     }
                 }
