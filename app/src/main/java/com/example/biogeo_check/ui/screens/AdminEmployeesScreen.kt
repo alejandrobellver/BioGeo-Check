@@ -65,8 +65,10 @@ fun AdminDashboardScreen(
     vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
-    LaunchedEffect(Unit) {
-        vm.cargarTrabajadoresDeLaEmpresa()
+    LaunchedEffect(vm.trabajadorActual) {
+        if (vm.trabajadorActual != null) {
+            vm.cargarTrabajadoresDeLaEmpresa()
+        }
     }
 
     Column(

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
@@ -57,10 +58,19 @@ class MainActivity : FragmentActivity() {
                     val dashboardViewModel: DashboardViewModel =
                         viewModel(factory = dashboardViewModelFactory)
 
+                    val departmentsViewModelFactory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return DepartmentsViewModel(fichajeRepository) as T
+                        }
+                    }
+                    val departmentsViewModel: DepartmentsViewModel =
+                        viewModel(factory = departmentsViewModelFactory)
+
                     AppNavigation(
                         authViewModel = authViewModel,
                         dashboardViewModel = dashboardViewModel,
-                        departmentsViewModel = DepartmentsViewModel(fichajeRepository)
+                        departmentsViewModel = departmentsViewModel
                     )
                 }
             }
@@ -75,6 +85,15 @@ fun AppNavigation(
     departmentsViewModel: DepartmentsViewModel
 ) {
     val navController = rememberNavController()
+
+    // Si la app se minimiza o recrea (y el SO mata la memoria),
+    // nos aseguramos de que el DashboardViewModel recargue quién es el usuario actual.
+    // Esto evita que el sistema te considere "desconocido" y bloquee la barra de navegación del Jefe.
+    LaunchedEffect(Unit) {
+        if (dashboardViewModel.trabajadorActual == null) {
+            dashboardViewModel.cargarDatosIniciales()
+        }
+    }
 
     NavHost(navController = navController, startDestination = "legal") {
         composable("legal") {
