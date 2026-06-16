@@ -34,7 +34,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.biogeo_check.ui.viewmodel.AuthState
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 
 @Composable
@@ -49,7 +48,6 @@ fun AuthMasterScreen(
     val background = Color(0xFF121212)
     val surface = Color(0xFF708090)
 
-    // 🌟 NUEVO: El scroll ahora vive aquí, en la pantalla principal
     val mainScrollState = rememberScrollState()
 
     Box(
@@ -62,8 +60,8 @@ fun AuthMasterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(mainScrollState) // 🚀 Aplicamos el scroll a TODA la pantalla
-                .padding(bottom = 48.dp) // Espacio al final para que respiren los mensajes
+                .verticalScroll(mainScrollState)
+                .padding(bottom = 48.dp)
         ) {
 
             // TÍTULO
@@ -115,7 +113,7 @@ fun AuthMasterScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     when (currentTab) {
                         0 -> LoginView(viewModel, emerald)
-                        1 -> RegistroJefeView(viewModel, emerald) // 👈 Ya no desborda internamente
+                        1 -> RegistroJefeView(viewModel, emerald)
                         2 -> ActivacionTrabajadorView(viewModel, emerald)
                     }
                 }
@@ -123,14 +121,14 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // GESTIÓN VISUAL DEL ESTADO (¡Ahora siempre visible al bajar el scroll!)
+            // 🚀 CORREGIDO: Ahora apunta de forma explícita a AuthViewModel.AuthState
             when (state) {
-                is AuthState.Loading -> {
+                is AuthViewModel.AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))
                 }
 
-                is AuthState.Error -> {
-                    val mensajeError = (state as AuthState.Error).mensaje
+                is AuthViewModel.AuthState.Error -> {
+                    val mensajeError = (state as AuthViewModel.AuthState.Error).mensaje
                     Text(
                         text = "❌ Error: $mensajeError",
                         color = Color(0xFFEF4444),
@@ -139,8 +137,8 @@ fun AuthMasterScreen(
                     )
                 }
 
-                is AuthState.Success -> {
-                    val trabajador = (state as AuthState.Success).trabajador
+                is AuthViewModel.AuthState.Success -> {
+                    val trabajador = (state as AuthViewModel.AuthState.Success).trabajador
                     if (trabajador != null) {
                         LaunchedEffect(Unit) {
                             onNavigateToDashboard(trabajador.rol == "JEFE")
@@ -156,7 +154,7 @@ fun AuthMasterScreen(
                     }
                 }
 
-                is AuthState.Idle -> {}
+                is AuthViewModel.AuthState.Idle -> {}
             }
         }
     }
@@ -216,7 +214,6 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
 
-    // 🚀 MODIFICACIÓN: Quitamos fillMaxSize y verticalScroll de aquí para heredar el del padre de forma limpia
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Registrar Nueva Empresa",
@@ -334,8 +331,6 @@ fun ActivacionTrabajadorView(vm: AuthViewModel, color: Color) {
     var nombre by remember { mutableStateOf("") }
     var apellidos by remember { mutableStateOf("") }
     var dni by remember { mutableStateOf("") }
-
-
 
     Column {
         Text(
