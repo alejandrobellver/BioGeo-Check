@@ -103,13 +103,33 @@ fun AppNavigation(
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
 
-                        // 🚀 CORREGIDO CON TU COMENTARIO: Si es jefe pasa, si no, no hace nada
-                        NavScreen.HISTORY -> {
+                        // Nuevos botones para jefes
+                        NavScreen.EMPLOYEES -> {
+                            if (esJefe) {
+                                navController.navigate("admin_employees")
+                            }
+                        }
+                        NavScreen.DEPARTMENTS -> {
                             if (esJefe) {
                                 navController.navigate("admin_departments")
                             }
                         }
 
+                        NavScreen.PROFILE -> navController.navigate("user_profile")
+                    }
+                }
+            )
+        }
+
+        composable("admin_employees") {
+            com.example.biogeo_check.ui.screens.AdminDashboardScreen(
+                vm = dashboardViewModel,
+                onNavigate = { screen ->
+                    val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
+                    when (screen) {
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+                        NavScreen.EMPLOYEES -> { /* Ya estamos aquí */ }
+                        NavScreen.DEPARTMENTS -> { if (esJefe) navController.navigate("admin_departments") }
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -122,7 +142,14 @@ fun AppNavigation(
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
-                        NavScreen.HISTORY -> { /* Ya estamos aquí */ }
+
+                        NavScreen.EMPLOYEES -> {
+                            val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
+                            if (esJefe) navController.navigate("admin_employees")
+                        }
+
+                        NavScreen.DEPARTMENTS -> { /* Ya estamos aquí */ }
+
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -138,8 +165,12 @@ fun AppNavigation(
                         // 🚀 CORREGIDO: Apunta a "fichaje_dashboard"
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
 
-                        // 🚀 CORREGIDO: Si es jefe puede ir a ver los departamentos desde su perfil
-                        NavScreen.HISTORY -> {
+                        NavScreen.EMPLOYEES -> {
+                            if (esJefe) {
+                                navController.navigate("admin_employees")
+                            }
+                        }
+                        NavScreen.DEPARTMENTS -> {
                             if (esJefe) {
                                 navController.navigate("admin_departments")
                             }

@@ -95,7 +95,7 @@ fun AdminDepartmentsScreen(
         }
 
         BottomNavBar(
-            currentScreen = NavScreen.HISTORY,
+            currentScreen = NavScreen.EMPLOYEES,
             onNavigate = onNavigate
         )
     }

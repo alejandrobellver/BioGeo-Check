@@ -137,7 +137,9 @@ class AuthRepository(private val supabase: SupabaseClient) {
             apellidos = apellidos,
             dni = dni,
             email = email,
-            rol = invitado.rol
+            rol = invitado.rol,
+            departamentoId = invitado.departamentoId,
+            contratoId = invitado.contratoId
         )
         supabase.postgrest["trabajador"].insert(nuevoTrabajador)
 

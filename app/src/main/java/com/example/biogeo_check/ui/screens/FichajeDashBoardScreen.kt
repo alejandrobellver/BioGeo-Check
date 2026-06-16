@@ -136,6 +136,7 @@ fun FichajeDashboardScreen(
 
         BottomNavBar(
             currentScreen = NavScreen.HOME,
+            isJefe = trabajador?.rol == "JEFE",
             onNavigate = onNavigate
         )
     }

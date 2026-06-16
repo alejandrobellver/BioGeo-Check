@@ -93,8 +93,8 @@ dependencies {
         // PRUEBA ESTE CAMBIO: Algunas versiones usan 'gotrue-kt' en lugar de 'auth-kt'
         // aunque el paquete se llame auth internamente.
         implementation("io.github.jan-tennert.supabase:gotrue-kt:$supabase_version")
-
         implementation("io.github.jan-tennert.supabase:realtime-kt:$supabase_version")
+        implementation("io.github.jan-tennert.supabase:functions-kt:$supabase_version")
 
         // Serialización y Ktor
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
