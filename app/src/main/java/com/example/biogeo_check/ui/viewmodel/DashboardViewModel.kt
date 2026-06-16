@@ -458,8 +458,9 @@ class DashboardViewModel(
             }
 
             try {
+                val emailNormalizado = inviteEmail.trim().lowercase()
                 val invitacion = com.example.biogeo_check.data.model.Invitacion(
-                    email = inviteEmail,
+                    email = emailNormalizado,
                     empresaId = empresaId,
                     rol = "TRABAJADOR",
                     departamentoId = inviteDeptoId,

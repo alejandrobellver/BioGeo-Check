@@ -140,7 +140,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                repository.activarCuentaTrabajador(email, contrasena, nombre, apellidos, dni)
+                val emailNormalizado = email.trim().lowercase()
+                repository.activarCuentaTrabajador(emailNormalizado, contrasena, nombre, apellidos, dni)
                 _authState.value = AuthState.Success(null)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error al activar la cuenta")

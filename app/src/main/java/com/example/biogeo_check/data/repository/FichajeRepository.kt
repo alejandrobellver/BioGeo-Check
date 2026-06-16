@@ -12,6 +12,13 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.client.statement.bodyAsText
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class FichajeRepository(private val supabase: SupabaseClient) {
 
@@ -235,9 +242,13 @@ class FichajeRepository(private val supabase: SupabaseClient) {
     }
 
     suspend fun crearInvitacion(invitacion: com.example.biogeo_check.data.model.Invitacion) {
-        supabase.functions.invoke("invite-employee") {
+        val response = supabase.functions.invoke("invite-employee") {
             contentType(ContentType.Application.Json)
             setBody(invitacion)
+        }
+        if (response.status.value !in 200..299) {
+            val errorBody = try { response.bodyAsText() } catch(e:Exception) { "Error desconocido" }
+            throw Exception("Error del servidor: ${response.status.value} - $errorBody")
         }
     }
 
