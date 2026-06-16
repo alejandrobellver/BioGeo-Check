@@ -10,43 +10,118 @@ import com.example.biogeo_check.data.model.Fichaje
 import com.example.biogeo_check.data.model.TipoContrato
 import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.data.repository.FichajeRepository
+import com.example.biogeo_check.ui.screens.EmployeeStat
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel encargado de centralizar y gestionar las operaciones del panel principal (Dashboard).
+ * * Suministra de forma reactiva los datos del estado de la jornada del trabajador activo, la gestión
+ * del perfil del empleado, la visualización de métricas en tiempo real del equipo de la empresa
+ * y el flujo de envío de invitaciones para nuevos miembros.
+ *
+ * @property fichajeRepository Repositorio que unifica las consultas y mutaciones de datos relacionados con fichajes, perfiles, contratos y departamentos.
+ */
 class DashboardViewModel(
     private val fichajeRepository: FichajeRepository
 ) : ViewModel() {
 
+    // ==========================================
+    // ESTADOS REACTIVOS (TRABAJADOR ACTUAL)
+    // ==========================================
+
+    /** Datos del perfil del trabajador autenticado en la sesión actual. */
     var trabajadorActual by mutableStateOf<Trabajador?>(null)
+
+    /** Registro del último fichaje efectuado por el usuario (ENTRADA/SALIDA). */
     var ultimoFichaje by mutableStateOf<Fichaje?>(null)
+
+    /** Catálogo completo de modalidades de contratación disponibles en la aplicación. */
     var listaContratos by mutableStateOf<List<TipoContrato>>(listOf())
+
+    /** Identificador único del contrato seleccionado actualmente por el usuario. */
     var contratoSeleccionadoId by mutableStateOf<String?>(null)
+
+    /** Representación en texto formateado ("HH:mm") del tiempo total laborado durante el día de hoy. */
     var tiempoTrabajadoHoy by mutableStateOf("00:00")
 
+
+    // ==========================================
+    // ESTADOS REACTIVOS (PANEL DE EQUIPO / JEFE)
+    // ==========================================
+
+    /** Lista global de todos los trabajadores pertenecientes a la misma empresa. */
     var listaTrabajadores by mutableStateOf<List<Trabajador>>(listOf())
-    var teamStats by mutableStateOf<List<com.example.biogeo_check.ui.screens.EmployeeStat>>(listOf())
+
+    /** Estadísticas procesadas de los empleados para su renderizado en la interfaz. */
+    var teamStats by mutableStateOf<List<EmployeeStat>>(listOf())
+
+    /** Computo global de horas acumuladas portodo el equipo durante la jornada actual. */
     var totalHorasEquipo by mutableStateOf("0h")
+
+    /** Ratio en formato texto que indica cuántos empleados están activos respecto al total (ej. "3/10"). */
     var activosHoy by mutableStateOf("0/0")
 
-    // Estados para el diálogo de invitación
+
+    // ==========================================
+    // ESTADOS REACTIVOS (FORMULARIO DE INVITACIÓN)
+    // ==========================================
+
+    /** Controla la visibilidad del cuadro de diálogo para invitar a nuevos empleados. */
     var showInviteDialog by mutableStateOf(false)
+
+    /** Dirección de correo electrónico del destinatario de la invitación. */
     var inviteEmail by mutableStateOf("")
+
+    /** ID del departamento al cual se asignará al futuro empleado. */
     var inviteDeptoId by mutableStateOf<String?>(null)
+
+    /** ID del tipo de contrato que se le asociará al futuro empleado. */
     var inviteContratoId by mutableStateOf<String?>(null)
+
+    /** Mensaje de error específico para el flujo de invitaciones. */
     var inviteError by mutableStateOf<String?>(null)
+
+    /** Mensaje de confirmación tras haber enviado una invitación de forma exitosa. */
     var inviteSuccessMessage by mutableStateOf<String?>(null)
 
+
+    // ==========================================
+    // ESTADOS REACTIVOS (INTERFAZ GENERAL Y PERFIL)
+    // ==========================================
+
+    /** Texto descriptivo de la hora en la que se realizó el fichaje actual. */
     var horaFichajeTexto by mutableStateOf("")
+
+    /** Texto predictivo de la hora estimada de salida o del siguiente hito laboral. */
     var horaSiguienteEventoTexto by mutableStateOf("")
+
+    /** Mensaje global de error de la pantalla mapeado para comprensión del usuario. */
     var errorMessage by mutableStateOf<String?>(null)
 
+    /** Información detallada del departamento al que pertenece el usuario autenticado. */
     var departamento by mutableStateOf<Departamento?>(null)
+
+    /** Información del contrato específico asignado al usuario. */
     var tipoContrato by mutableStateOf<TipoContrato?>(null)
+
+    /** Catálogo completo de departamentos creados en la organización. */
     var listaDepartamentos by mutableStateOf<List<Departamento>>(listOf())
 
+    /** Campo de entrada para la edición del correo electrónico en la sección de perfil. */
     var emailInput by mutableStateOf("")
+
+    /** ID del departamento seleccionado en los menús desplegables de configuración. */
     var deptoSeleccionadoId by mutableStateOf<String?>(null)
+
+    /** Determina si el usuario se encuentra actualmente en modo de edición de sus datos de perfil. */
     var editMode by mutableStateOf(false)
 
+
+    /**
+     * Consulta y descarga de forma asíncrona la información requerida al iniciar la pantalla del Dashboard.
+     * * Resuelve el ID del usuario en sesión, descarga su perfil, localiza su último marcaje
+     * y obtiene los detalles de su contrato para calcular las horas de la jornada.
+     */
     fun cargarDatosIniciales() {
         viewModelScope.launch {
             try {
@@ -57,12 +132,10 @@ class DashboardViewModel(
                 trabajadorActual?.let {
                     ultimoFichaje = fichajeRepository.obtenerUltimoFichaje(it.trabajadorId)
 
-                    // 🚀 1. Nos traemos el contrato de Supabase PRIMERO de forma síncrona
                     it.contratoId?.let { cId ->
                         tipoContrato = fichajeRepository.obtenerTipoContrato(cId)
                     }
 
-                    // 🚀 2. AHORA SÍ, con el contrato ya guardado en memoria, calculamos las horas
                     calcularTiempoTrabajadoHoy()
                 }
             } catch (e: Exception) {
@@ -71,6 +144,11 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Evalúa el estado del último fichaje y realiza una proyección de la jornada diaria del trabajador.
+     * * Determina las horas obligatorias en función del contrato asignado y actualiza las propiedades
+     * estéticas [horaFichajeTexto] y [horaSiguienteEventoTexto] para guiar al usuario.
+     */
     private fun calcularTiempoTrabajadoHoy() {
         val trabajador = trabajadorActual ?: return
 
@@ -79,9 +157,7 @@ class DashboardViewModel(
         val minutoActual = cal.get(java.util.Calendar.MINUTE)
 
         val horasSemanalesCelda = tipoContrato?.horasSemanales ?: 40
-
         val horasJornadaDiaria = horasSemanalesCelda / 5
-
         val esEntrada = ultimoFichaje?.tipoAccion == "ENTRADA"
 
         if (esEntrada) {
@@ -96,7 +172,6 @@ class DashboardViewModel(
                 minutoActual
             )
 
-            // Asignamos fijas a las variables del Dashboard
             horaFichajeTexto = horaEntradaTexto
             horaSiguienteEventoTexto = horaSalidaTexto
         } else {
@@ -111,12 +186,16 @@ class DashboardViewModel(
                 minutoActual
             )
 
-            // Asignamos fijas a las variables del Dashboard
             horaFichajeTexto = horaEntradaTexto
             horaSiguienteEventoTexto = horaSalidaTexto
         }
     }
 
+    /**
+     * Alterna de forma segura el estado de la jornada laboral del usuario (conmutación entre ENTRADA y SALIDA).
+     * * Inserta un nuevo registro en el historial de eventos, invalida la caché del contrato actual,
+     * recalcula las métricas diarias y maneja las excepciones de red de forma temporal visualizándolas en la UI.
+     */
     fun alternarFichaje() {
         val trabajador = trabajadorActual
         if (trabajador == null) {
@@ -131,7 +210,6 @@ class DashboardViewModel(
                     fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
                 ultimoFichaje = nuevoLog
 
-                // Recargamos el contrato por si acaso ha cambiado en el perfil
                 trabajador.contratoId?.let { cId ->
                     tipoContrato = fichajeRepository.obtenerTipoContrato(cId)
                 }
@@ -149,6 +227,11 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Descarga y enlaza todas las propiedades relativas al perfil privado del trabajador.
+     * * Carga de forma masiva los catálogos auxiliares de contratos y departamentos requeridos
+     * para alimentar los componentes de selección de la vista de configuración de usuario.
+     */
     fun cargarDatosPerfil() {
         viewModelScope.launch {
             if (trabajadorActual == null) {
@@ -182,14 +265,12 @@ class DashboardViewModel(
 
             try {
                 listaDepartamentos = fichajeRepository.obtenerTodosLosDepartamentos()
-                println("🏢 LISTA DE DEPARTAMENTOS CARGADA: ${listaDepartamentos.size} encontrados")
             } catch (e: Exception) {
                 println("❌ Error cargando LISTA de departamentos: ${e.message}")
             }
 
             try {
                 listaContratos = fichajeRepository.obtenerTodosLosContratos()
-                println("📜 LISTA DE CONTRATOS CARGADA: ${listaContratos.size} encontrados")
             } catch (e: Exception) {
                 println("❌ ERROR CRÍTICO CARGANDO LISTA DE CONTRATOS: El modelo TipoContrato no coincide con Supabase")
                 e.printStackTrace()
@@ -197,6 +278,11 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Persiste en la base de datos remota las modificaciones realizadas sobre el perfil del empleado.
+     * * Al finalizar la operación de guardado, desactiva el flag [editMode] e invalida el estado
+     * local forzando una recarga de sincronización con el servidor.
+     */
     fun guardarCambiosPerfil() {
         val tId = trabajadorActual?.trabajadorId ?: return
         viewModelScope.launch {
@@ -218,6 +304,12 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Recupera y computa las métricas de asistencia de todos los subordinados o compañeros de la corporación.
+     * * Analiza cronológicamente la secuencia de marcajes diarios de cada trabajador, determina su estado
+     * en tiempo real (Ausente/Fichado), calcula las sumas de minutos laborados traduciéndolos a texto legible
+     * y actualiza variables de impacto global como [activosHoy] y [totalHorasEquipo].
+     */
     fun cargarTrabajadoresDeLaEmpresa() {
         viewModelScope.launch {
             try {
@@ -243,10 +335,12 @@ class DashboardViewModel(
                         }
                     }
 
-                    // Función local para parsear la fecha de forma segura
+                    /**
+                     * Normaliza cadenas de fechas provenientes de la API externa (Supabase ISO) para su conversión segura.
+                     */
                     fun parseSupabaseDate(dateStr: String): java.util.Date? {
                         try {
-                            var cleanStr = dateStr.replace(" ", "T") // Cambiar espacio por 'T'
+                            var cleanStr = dateStr.replace(" ", "T")
                             if (cleanStr.contains(".")) {
                                 cleanStr = cleanStr.substringBefore(".") + "Z"
                             } else if (cleanStr.contains("+")) {
@@ -266,7 +360,6 @@ class DashboardViewModel(
                         }
                     }
 
-                    // Calcular minutos trabajados hoy
                     var minutosTrabajados = 0L
                     var ultimaEntrada: java.util.Date? = null
 
@@ -333,7 +426,6 @@ class DashboardViewModel(
                 teamStats = stats
                 activosHoy = "$activos/${listaTrabajadores.size}"
                 val hTotal = minTotalesEquipo / 60
-                val mTotal = minTotalesEquipo % 60
                 totalHorasEquipo = "${hTotal}h"
 
             } catch (e: Exception) {
@@ -342,6 +434,12 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Genera e inserta una nueva invitación para la incorporación de un nuevo trabajador a la empresa.
+     * * Valida la integridad del formulario en pantalla. En caso de fallas controladas o respuestas
+     * HTTP fallidas (como errores 400 o 500 derivados de restricciones de clave duplicada en la base de datos),
+     * intercepta la excepción para imprimir un mensaje comprensible al administrador.
+     */
     fun invitarEmpleado() {
         viewModelScope.launch {
             if (inviteEmail.isBlank()) {
@@ -376,8 +474,6 @@ class DashboardViewModel(
                 inviteSuccessMessage = "Invitación enviada correctamente."
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Si Ktor oculta el mensaje real del body en un 500/400, atrapamos al menos que es fallo.
-                // Para asegurarnos de que caza el 500, podemos mirar si el mensaje contiene "500" o "400"
                 inviteError = obtenerMensajeErrorHumano(e)
                 if (e.message?.contains("500") == true || e.message?.contains("400") == true) {
                     inviteError = "Este correo ya está registrado o hay un error de conexión."
@@ -391,46 +487,34 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Analiza las excepciones técnicas de red o de base de datos relacional y las traduce
+     * a mensajes amigables e intuitivos orientados al usuario final.
+     * * @param e Excepción capturada durante la ejecución de las operaciones del repositorio.
+     * @return Una cadena de texto con la traducción comprensible del problema.
+     */
     private fun obtenerMensajeErrorHumano(e: Exception): String {
         val msg = e.toString()
         return when {
-            msg.contains(
-                "User already registered",
-                ignoreCase = true
-            ) || msg.contains("already exists", ignoreCase = true) ->
+            msg.contains("User already registered", ignoreCase = true) || msg.contains("already exists", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado en el sistema."
 
-            msg.contains(
-                "duplicate key value",
-                ignoreCase = true
-            ) || msg.contains("invitaciones_email_key", ignoreCase = true) ->
+            msg.contains("duplicate key value", ignoreCase = true) || msg.contains("invitaciones_email_key", ignoreCase = true) ->
                 "Este correo ya ha sido invitado."
 
-            msg.contains("Network", ignoreCase = true) || msg.contains(
-                "UnknownHost",
-                ignoreCase = true
-            ) || msg.contains("ConnectException", ignoreCase = true) ->
+            msg.contains("Network", ignoreCase = true) || msg.contains("UnknownHost", ignoreCase = true) || msg.contains("ConnectException", ignoreCase = true) ->
                 "Comprueba tu conexión a internet."
 
             msg.contains("timeout", ignoreCase = true) ->
                 "La conexión ha tardado demasiado, inténtalo de nuevo."
 
-            msg.contains("invalid email", ignoreCase = true) || msg.contains(
-                "Valid email",
-                ignoreCase = true
-            ) ->
+            msg.contains("invalid email", ignoreCase = true) || msg.contains("Valid email", ignoreCase = true) ->
                 "El formato del correo no es válido."
 
             msg.contains("not found", ignoreCase = true) ->
                 "No se ha encontrado la información."
 
-            msg.contains("500", ignoreCase = true) || msg.contains(
-                "400",
-                ignoreCase = true
-            ) || msg.contains(
-                "ServerResponseException",
-                ignoreCase = true
-            ) || msg.contains("RestException", ignoreCase = true) ->
+            msg.contains("500", ignoreCase = true) || msg.contains("400", ignoreCase = true) || msg.contains("ServerResponseException", ignoreCase = true) || msg.contains("RestException", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado."
 
             else ->

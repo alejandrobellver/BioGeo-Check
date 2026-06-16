@@ -9,43 +9,84 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-// 1. Definimos los estados, los primeros dos son para la UI para que sepa en que momento estamos
-// Los segundos los data class es un objeto sitodo va bien o mal, devuelve unos elementos u otros
-sealed class AuthState {
-    object Idle : AuthState()
-    object Loading : AuthState()
-    data class Success(val trabajador: Trabajador?) : AuthState()
-    data class Error(val mensaje: String) : AuthState()
-}
-
-// 2. Lo mismo que hacemos en acceso a datos, pero con los estados
-//  Instanciamos que atraves del viewmodel accedemos al repositorio
+/**
+ * ViewModel encargado de gestionar la lógica de negocio y el estado de la UI para los procesos
+ * de autenticación, registro y gestión de sesiones.
+ *
+ * Actúa como intermediario entre la vista (Jetpack Compose) y la capa de datos ([AuthRepository]),
+ * asegurando que las operaciones pesadas se realicen mediante corrutinas fuera del hilo principal.
+ *
+ * @property repository Repositorio de autenticación que provee el acceso a los datos.
+ */
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
-    // "_" indica es mutable, aqui se va a guardar el estado de la autenticación
+    /**
+     * Representa de forma cerrada los diferentes estados de la interfaz de usuario (UI)
+     * durante el flujo de autenticación controlado por este ViewModel.
+     */
+    sealed class AuthState {
+        /** Estado inicial o de reposo, indicando que no hay ninguna operación activa. */
+        object Idle : AuthState()
+
+        /** Estado de carga que indica que se está ejecutando una operación asíncrona en segundo plano. */
+        object Loading : AuthState()
+
+        /**
+         * Estado de éxito que indica que la operación se completó correctamente.
+         *
+         * @property trabajador El objeto [Trabajador] autenticado, o null si la operación exitosa no devuelve un usuario.
+         */
+        data class Success(val trabajador: Trabajador?) : AuthState()
+
+        /**
+         * Estado de error que contiene información sobre el fallo ocurrido.
+         *
+         * @property mensaje Descripción del error destinado a mostrarse en la interfaz de usuario.
+         */
+        data class Error(val mensaje: String) : AuthState()
+    }
+
+    /**
+     * Flujo de estado interno y mutable que almacena el estado actual de la autenticación.
+     */
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
 
-    // este es el estado que sube al UI, no se puede modificar desde fuera
+    /**
+     * Flujo de estado público de solo lectura expuesto a la interfaz de usuario para garantizar la reactividad.
+     */
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    // Son las mismas funciones que el repositorio, pero con el estado para notificar al UI
-
+    /**
+     * Inicia el proceso de inicio de sesión de un usuario de forma asíncrona.
+     *
+     * @param email Correo electrónico proporcionado por el usuario.
+     * @param contrasena Contraseña proporcionada por el usuario.
+     */
     fun login(email: String, contrasena: String) {
-        // IMPORTANTE CORRUTINA, para que no estes esperando en el hilo principal
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                // Llamamos al repositorio. Si va bien, nos devuelve el trabajador
                 val trabajador = repository.login(email, contrasena)
                 _authState.value = AuthState.Success(trabajador)
             } catch (e: Exception) {
-                // Si falla, atrapamos el error y lo enviamos a la UI
                 _authState.value =
                     AuthState.Error(e.message ?: "Error desconocido al iniciar sesión")
             }
         }
     }
 
+    /**
+     * Registra simultáneamente una nueva empresa y a su jefe asignado en el sistema de forma asíncrona.
+     *
+     * @param email Correo electrónico corporativo del jefe.
+     * @param contrasena Contraseña para el acceso del jefe.
+     * @param nombreEmpresa Nombre comercial o razón social de la empresa.
+     * @param cif Código de Identificación Fiscal de la empresa.
+     * @param direccion Ubicación física o fiscal de la empresa.
+     * @param nombreJefe Nombre de pila del administrador/jefe.
+     * @param apellidosJefe Apellidos del administrador/jefe.
+     * @param dniJefe Documento Nacional de Identidad del administrador/jefe.
+     */
     fun registrarJefeYEmpresa(
         email: String,
         contrasena: String,
@@ -59,7 +100,6 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                // 🚀 Se los pasamos todos al repositorio optimizado
                 repository.registrarJefeYEmpresa(
                     email = email,
                     contrasena = contrasena,
@@ -70,17 +110,22 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     apellidosJefe = apellidosJefe,
                     dniJefe = dniJefe
                 )
-
-                // Si todo va bien, pasamos al estado de éxito
                 _authState.value = AuthState.Success(null)
-
             } catch (e: Exception) {
-                // Si algo falla (ej: el CIF ya existe o el correo está mal), capturamos el error
                 _authState.value = AuthState.Error(e.message ?: "Error desconocido al registrar")
             }
         }
     }
 
+    /**
+     * Activa la cuenta de un trabajador previamente pre-registrado, estableciendo sus credenciales y datos personales.
+     *
+     * @param email Correo electrónico del trabajador asignado por la empresa.
+     * @param contrasena Nueva contraseña elegida por el trabajador.
+     * @param nombre Nombre de pila del trabajador.
+     * @param apellidos Apellidos del trabajador.
+     * @param dni Documento Nacional de Identidad del trabajador.
+     */
     fun activarCuentaTrabajador(
         email: String,
         contrasena: String,
@@ -99,6 +144,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Cierra la sesión activa del usuario actual y restablece el estado de autenticación.
+     */
     fun logout() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -111,7 +159,12 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
-    // Función complementaría para limpiar el error de la pantalla si el usuario empieza a escribir de nuevo
+    /**
+     * Restablece el flujo de estado de autenticación al estado inicial ([AuthState.Idle]).
+     *
+     * Útil para limpiar mensajes de error residuales en la pantalla cuando el usuario
+     * interactúa de nuevo con los campos de texto.
+     */
     fun resetState() {
         _authState.value = AuthState.Idle
     }

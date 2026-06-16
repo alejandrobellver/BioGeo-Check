@@ -46,7 +46,6 @@ fun FichajeDashboardScreen(
     val activity = LocalActivity.current as? FragmentActivity
 
     LaunchedEffect(Unit) {
-        // 🚀 LA CLAVE: Cargamos los datos del perfil que sabemos que bajan el contrato perfecto
         vm.cargarDatosIniciales()
         vm.cargarDatosPerfil()
     }
