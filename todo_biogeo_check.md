@@ -74,7 +74,7 @@
 | # | Tarea | Estado |
 |---|-------|--------|
 | 9.1 | Refactorizar código y aplicar estilos unificados (Material3) | ✅ **Hecho** |
-| 9.2 | Probar flujo completo (Login -> Fichaje Biométrico -> BD) | ⬜ Pendiente |
+| 9.2 | Probar flujo completo (Login -> Fichaje Biométrico -> BD) | ✅ **Hecho** |
 | 9.3 | Documentar código para memoria del TFG | ✅ **Hecho** |
 | 9.4 | Generar y firmar el archivo APK definitivo | ⬜ Pendiente |
 
@@ -92,8 +92,8 @@
 | Geolocalización | 3 | **0** | 3 |
 | Biometría | 2 | **2** | 0 |
 | Panel Admin | 2 | **2** | 0 |
-| Pulido Final | 4 | **2** | 2 |
-| **TOTAL** | **33** | **28** | **5** |
+| Pulido Final | 4 | **3** | 1 |
+| **TOTAL** | **33** | **29** | **4** |
 
 > [!NOTE]
-> **Progreso: ~85%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
+> **Progreso: ~88%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
