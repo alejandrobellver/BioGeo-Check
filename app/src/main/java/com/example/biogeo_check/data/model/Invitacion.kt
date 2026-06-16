@@ -8,5 +8,7 @@ data class Invitacion(
 // El 'id' se puede omitir si lo genera Supabase automáticamente
     val email: String,
     @SerialName("empresa_id") val empresaId: String, // ¡Necesario!
-    val rol: String = "TRABAJADOR"
+    val rol: String = "TRABAJADOR",
+    @SerialName("departamento_id") val departamentoId: String? = null,
+    @SerialName("contrato_id") val contratoId: String? = null
 )

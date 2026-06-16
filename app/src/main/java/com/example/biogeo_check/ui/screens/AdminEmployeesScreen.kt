@@ -8,7 +8,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +36,10 @@ import com.example.biogeo_check.ui.theme.*
 
 data class EmployeeStat(
     val name: String,
+    val deptoName: String,
     val status: String,
-    val todayHours: String
+    val todayHours: String,
+    val lastEventTime: String
 )
 
 @Composable
@@ -35,12 +47,9 @@ fun AdminDashboardScreen(
     vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
-    val sampleEmployees = listOf(
-        EmployeeStat("Maria Garcia", "Fichado", "04:12"),
-        EmployeeStat("John Doe", "Ausente", "08:00"),
-        EmployeeStat("Alice Smith", "Fichado", "02:45"),
-        EmployeeStat("Bob Johnson", "Ausente", "07:30")
-    )
+    LaunchedEffect(Unit) {
+        vm.cargarTrabajadoresDeLaEmpresa()
+    }
 
     Column(
         modifier = Modifier
@@ -68,21 +77,35 @@ fun AdminDashboardScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                MetricCard(title = "Horas\nTotales", value = "142h", modifier = Modifier.weight(1f))
-                MetricCard(title = "Activos\nHoy", value = "12/15", modifier = Modifier.weight(1f))
-                MetricCard(title = "Aprobaciones\nPendientes", value = "3", modifier = Modifier.weight(1f))
+                MetricCard(title = "Horas\nTotales", value = vm.totalHorasEquipo, modifier = Modifier.weight(1f))
+                MetricCard(title = "Activos\nHoy", value = vm.activosHoy, modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "Estado de Empleados",
-                color = PrimaryTextWhite,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.SansSerif,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Estado de Empleados",
+                    color = PrimaryTextWhite,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily.SansSerif
+                )
+
+                Button(
+                    onClick = { vm.showInviteDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir", tint = PrimaryTextWhite)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Invitar", color = PrimaryTextWhite, fontWeight = FontWeight.Bold)
+                }
+            }
 
             // Employee List
             LazyColumn(
@@ -90,7 +113,7 @@ fun AdminDashboardScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
             ) {
-                itemsIndexed(sampleEmployees) { index, employee ->
+                itemsIndexed(vm.teamStats) { index, stat ->
                     val bgColor = if (index % 2 == 0) BlackBackground else AlternatingRowDark
                     
                     Row(
@@ -101,15 +124,30 @@ fun AdminDashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = employee.name,
-                                color = PrimaryTextWhite,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stat.name,
+                                    color = PrimaryTextWhite,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = stat.deptoName,
+                                    color = EmeraldGreen,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .background(Color(0xFF00C853).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                val statusColor = if (employee.status == "Fichado") EmeraldGreen else SecondaryTextGray
+                                val statusColor = if (stat.status == "Fichado") EmeraldGreen else SecondaryTextGray
                                 Box(
                                     modifier = Modifier
                                         .size(8.dp)
@@ -118,24 +156,11 @@ fun AdminDashboardScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "${employee.status} • ${employee.todayHours} hoy",
+                                    text = "${stat.status} a las ${stat.lastEventTime} · Hoy: ${stat.todayHours}h",
                                     color = SecondaryTextGray,
                                     fontSize = 14.sp
                                 )
                             }
-                        }
-                        
-                        OutlinedButton(
-                            onClick = { /* View Details */ },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = EmeraldGreen,
-                                containerColor = Color.Transparent
-                            ),
-                            border = BorderStroke(1.dp, EmeraldGreen),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text("Ver", fontSize = 14.sp)
                         }
                     }
                 }
@@ -147,6 +172,103 @@ fun AdminDashboardScreen(
             isJefe = vm.trabajadorActual?.rol == "JEFE",
             onNavigate = onNavigate
         )
+
+        // Success Dialog
+        vm.inviteSuccessMessage?.let { msg ->
+            AlertDialog(
+                onDismissRequest = { vm.inviteSuccessMessage = null },
+                containerColor = DarkGrayCard,
+                title = { Text("Éxito", color = EmeraldGreen) },
+                text = { Text(msg, color = PrimaryTextWhite) },
+                confirmButton = {
+                    Button(
+                        onClick = { vm.inviteSuccessMessage = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen)
+                    ) {
+                        Text("Aceptar", color = PrimaryTextWhite)
+                    }
+                }
+            )
+        }
+
+        // Invite Dialog
+        if (vm.showInviteDialog) {
+            AlertDialog(
+                onDismissRequest = { vm.showInviteDialog = false },
+                containerColor = DarkGrayCard,
+                title = { Text("Invitar Empleado", color = PrimaryTextWhite) },
+                text = {
+                    Column {
+                        vm.inviteError?.let {
+                            Text(text = it, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
+                        }
+                        TextField(
+                            value = vm.inviteEmail,
+                            onValueChange = { vm.inviteEmail = it },
+                            placeholder = { Text("Email del empleado") },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = PrimaryTextWhite,
+                                unfocusedTextColor = PrimaryTextWhite,
+                                focusedContainerColor = BlackBackground,
+                                unfocusedContainerColor = BlackBackground
+                            ),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                        )
+                        
+                        var deptoExpanded by remember { mutableStateOf(false) }
+                        val deptoName = vm.listaDepartamentos.find { it.departamentoId == vm.inviteDeptoId }?.nombreDepartamento ?: "Seleccionar Departamento"
+                        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                            OutlinedButton(onClick = { deptoExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(deptoName, color = PrimaryTextWhite)
+                            }
+                            DropdownMenu(expanded = deptoExpanded, onDismissRequest = { deptoExpanded = false }) {
+                                vm.listaDepartamentos.forEach { depto ->
+                                    DropdownMenuItem(
+                                        text = { Text(depto.nombreDepartamento) },
+                                        onClick = {
+                                            vm.inviteDeptoId = depto.departamentoId
+                                            deptoExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        var contratoExpanded by remember { mutableStateOf(false) }
+                        val contratoName = vm.listaContratos.find { it.contratoId == vm.inviteContratoId }?.nombreContrato ?: "Seleccionar Contrato"
+                        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                            OutlinedButton(onClick = { contratoExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text(contratoName, color = PrimaryTextWhite)
+                            }
+                            DropdownMenu(expanded = contratoExpanded, onDismissRequest = { contratoExpanded = false }) {
+                                vm.listaContratos.forEach { contrato ->
+                                    DropdownMenuItem(
+                                        text = { Text("${contrato.nombreContrato} (${contrato.horasSemanales}h)") },
+                                        onClick = {
+                                            vm.inviteContratoId = contrato.contratoId
+                                            contratoExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { vm.invitarEmpleado() },
+                        colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen)
+                    ) {
+                        Text("Enviar Invitación", color = PrimaryTextWhite)
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { vm.showInviteDialog = false }) {
+                        Text("Cancelar", color = PrimaryTextWhite)
+                    }
+                }
+            )
+        }
     }
 }
 

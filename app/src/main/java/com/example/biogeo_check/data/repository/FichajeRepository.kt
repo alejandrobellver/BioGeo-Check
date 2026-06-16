@@ -8,6 +8,10 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.functions.functions
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 class FichajeRepository(private val supabase: SupabaseClient) {
 
@@ -79,5 +83,41 @@ class FichajeRepository(private val supabase: SupabaseClient) {
         return supabase.postgrest["fichaje"].insert(nuevoRegistro) {
             select()
         }.decodeSingle<Fichaje>()
+    }
+
+    suspend fun crearInvitacion(invitacion: com.example.biogeo_check.data.model.Invitacion) {
+        supabase.functions.invoke("invite-employee") {
+            contentType(ContentType.Application.Json)
+            setBody(invitacion)
+        }
+    }
+
+    suspend fun obtenerTrabajadoresPorEmpresa(empresaId: String): List<Trabajador> {
+        return supabase.postgrest["trabajador"]
+            .select { filter { eq("empresa_id", empresaId) } }
+            .decodeList<Trabajador>()
+    }
+
+    suspend fun obtenerFichajesDeTrabajadoresHoy(trabajadorIds: List<String>): List<Fichaje> {
+        if (trabajadorIds.isEmpty()) return emptyList()
+
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        
+        val sdfIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+        sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        val startOfDayUtc = sdfIso.format(cal.time)
+
+        return supabase.postgrest["fichaje"]
+            .select {
+                filter {
+                    isIn("trabajador_id", trabajadorIds)
+                    gte("hora_fichaje", startOfDayUtc)
+                }
+                order(column = "hora_fichaje", order = Order.ASCENDING)
+            }
+            .decodeList<Fichaje>()
     }
 }

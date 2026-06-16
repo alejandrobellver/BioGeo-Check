@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.biogeo_check.ui.theme.DarkEmeraldGreen
-import com.example.biogeo_check.ui.theme.DarkGrayCard
 
 enum class NavScreen {
     HOME, EMPLOYEES, DEPARTMENTS, PROFILE
