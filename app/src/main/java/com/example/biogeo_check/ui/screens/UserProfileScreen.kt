@@ -296,6 +296,7 @@ fun UserProfileScreen(
 
         BottomNavBar(
             currentScreen = NavScreen.PROFILE,
+            isJefe = trabajador?.rol == "JEFE",
             onNavigate = onNavigate
         )
     }

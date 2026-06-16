@@ -143,7 +143,8 @@ fun AdminDashboardScreen(
         }
 
         BottomNavBar(
-            currentScreen = NavScreen.HOME,
+            currentScreen = NavScreen.EMPLOYEES,
+            isJefe = vm.trabajadorActual?.rol == "JEFE",
             onNavigate = onNavigate
         )
     }

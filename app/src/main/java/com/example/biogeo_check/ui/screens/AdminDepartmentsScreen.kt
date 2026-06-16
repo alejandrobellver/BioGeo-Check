@@ -103,7 +103,8 @@ fun AdminDepartmentsScreen(
         }
 
         BottomNavBar(
-            currentScreen = NavScreen.HISTORY, // This is the middle tab
+            currentScreen = NavScreen.DEPARTMENTS,
+            isJefe = vm.trabajadorActual?.rol == "JEFE",
             onNavigate = onNavigate
         )
     }
