@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Departamento(
-    @SerialName("departamento_id") val departamentoId: String = "",
+    @SerialName("departamento_id") val departamentoId: String? = null,
     @SerialName("empresa_id") val empresaId: String,
     @SerialName("nombre_departamento") val nombreDepartamento: String,
     @SerialName("hora_entrada") val horaEntrada: String,

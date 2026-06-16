@@ -25,6 +25,7 @@ import com.example.biogeo_check.ui.screens.LegalScreen
 import com.example.biogeo_check.ui.screens.UserProfileScreen
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
+import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
                     }
                     val dashboardViewModel: DashboardViewModel = viewModel(factory = dashboardViewModelFactory)
 
-                    AppNavigation(authViewModel = authViewModel, dashboardViewModel = dashboardViewModel)
+                    AppNavigation(authViewModel = authViewModel, dashboardViewModel = dashboardViewModel, departmentsViewModel = DepartmentsViewModel(fichajeRepository))
                 }
             }
         }
@@ -65,7 +66,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(
     authViewModel: AuthViewModel,
-    dashboardViewModel: DashboardViewModel
+    dashboardViewModel: DashboardViewModel,
+    departmentsViewModel: DepartmentsViewModel
 ) {
     val navController = rememberNavController()
 
@@ -116,15 +118,11 @@ fun AppNavigation(
 
         composable("admin_departments") {
             AdminDepartmentsScreen(
-                vm = dashboardViewModel,
+                vm = departmentsViewModel,
                 onNavigate = { screen ->
                     when (screen) {
-                        // 🚀 CORREGIDO: Vuelve a la ruta correcta "fichaje_dashboard"
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
-
-                        // 🚀 CORREGIDO: Ya estamos aquí, se deja vacío
                         NavScreen.HISTORY -> { /* Ya estamos aquí */ }
-
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
