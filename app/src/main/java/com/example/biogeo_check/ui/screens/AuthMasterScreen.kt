@@ -1,6 +1,7 @@
 package com.example.biogeo_check.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +12,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,6 +54,7 @@ fun AuthMasterScreen(
     val surface = Color(0xFF708090)
 
     val mainScrollState = rememberScrollState()
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -112,7 +118,8 @@ fun AuthMasterScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     when (currentTab) {
-                        0 -> LoginView(viewModel, emerald)
+                        // 🚀 PASAMOS LA LAMBDA: Al hacer clic, cambia el estado para abrir el Popup
+                        0 -> LoginView(viewModel, emerald, onOlvideClick = { showForgotPasswordDialog = true })
                         1 -> RegistroJefeView(viewModel, emerald)
                         2 -> ActivacionTrabajadorView(viewModel, emerald)
                     }
@@ -121,7 +128,7 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🚀 CORREGIDO: Ahora apunta de forma explícita a AuthViewModel.AuthState
+            // CONTROL DE ESTADOS DE AUTENTICACIÓN
             when (state) {
                 is AuthViewModel.AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))
@@ -158,10 +165,130 @@ fun AuthMasterScreen(
             }
         }
     }
+
+    // =============================================================================================
+    // 🚀 POPUP DE RECUPERACIÓN DE CONTRASEÑA EN 2 FASES (OTP NATIVO v2.5.0)
+    // =============================================================================================
+    if (showForgotPasswordDialog) {
+        var emailRecuperacion by remember { mutableStateOf("") }
+        var codigoOTP by remember { mutableStateOf("") }
+        var pass1 by remember { mutableStateOf("") }
+        var pass2 by remember { mutableStateOf("") }
+
+        var codigoEnviado by remember { mutableStateOf(false) }
+        var feedbackDialog by remember { mutableStateOf("") }
+        var esErrorDialog by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showForgotPasswordDialog = false },
+            containerColor = Color(0xFF1E1E1E),
+            shape = RoundedCornerShape(12.dp),
+            title = {
+                Text(
+                    text = if (!codigoEnviado) "Recuperar Contraseña" else "Introduce el Código",
+                    color = emerald,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (!codigoEnviado) {
+                        Text("Introduce tu correo corporativo y te enviaremos un código de seguridad de 8 dígitos.", color = Color.LightGray, fontSize = 14.sp)
+                        OutlinedTextField(
+                            value = emailRecuperacion,
+                            onValueChange = { emailRecuperacion = it },
+                            label = { Text("Email registrado") },
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Text("Escribe el código recibido por correo y tus nuevas claves de acceso corporativas.", color = Color.LightGray, fontSize = 14.sp)
+
+                        OutlinedTextField(
+                            value = codigoOTP,
+                            onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it },
+                            label = { Text("Código de 8 dígitos") },
+
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = pass1,
+                            onValueChange = { pass1 = it },
+                            label = { Text("Nueva Contraseña") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = pass2,
+                            onValueChange = { pass2 = it },
+                            label = { Text("Repetir Nueva Contraseña") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    if (feedbackDialog.isNotBlank()) {
+                        Text(
+                            text = feedbackDialog,
+                            color = if (esErrorDialog) Color(0xFFEF4444) else emerald,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (!codigoEnviado) {
+                            viewModel.enviarCorreoRecuperacion(emailRecuperacion) { exito, mensaje ->
+                                if (exito) {
+                                    codigoEnviado = true
+                                    feedbackDialog = "Código enviado a tu correo."
+                                    esErrorDialog = false
+                                } else {
+                                    feedbackDialog = mensaje
+                                    esErrorDialog = true
+                                }
+                            }
+                        } else {
+                            viewModel.verificarYRestablecerContrasena(
+                                email = emailRecuperacion,
+                                codigo = codigoOTP,
+                                nuevaPass1 = pass1,
+                                nuevaPass2 = pass2
+                            ) { exito, mensaje ->
+                                feedbackDialog = mensaje
+                                esErrorDialog = !exito
+                                if (exito) {
+                                    showForgotPasswordDialog = false
+                                }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = emerald)
+                ) {
+                    Text(if (!codigoEnviado) "Enviar Código" else "Restablecer", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForgotPasswordDialog = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun LoginView(vm: AuthViewModel, color: Color) {
+fun LoginView(vm: AuthViewModel, color: Color, onOlvideClick: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
 
@@ -190,6 +317,19 @@ fun LoginView(vm: AuthViewModel, color: Color) {
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
         )
+
+        // 🚀 NUEVO: Texto clickable que abre el popup de recuperación
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "¿Has olvidado tu contraseña?",
+            color = Color.White,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .clickable { onOlvideClick() }
+                .padding(vertical = 4.dp)
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { vm.login(email, pass) },
@@ -382,6 +522,7 @@ fun ActivacionTrabajadorView(vm: AuthViewModel, color: Color) {
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
         )
+        Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
