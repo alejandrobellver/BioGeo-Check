@@ -1,6 +1,5 @@
 package com.example.biogeo_check.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,34 +21,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.biogeo_check.data.model.Departamento
+import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
 import com.example.biogeo_check.ui.theme.*
-import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.LaunchedEffect
+import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 
 @Composable
 fun AdminDepartmentsScreen(
-    vm: DashboardViewModel = viewModel(),
+    vm: DepartmentsViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
+    // 🚀 Lanzamos la carga unificada de Base de Datos al entrar
     LaunchedEffect(Unit) {
-        vm.cargarDatosIniciales()
+        vm.cargarDatosDepartamentosYPersonas()
     }
-    // Dummy state for demonstration
+
     var showCreateDialog by remember { mutableStateOf(false) }
     var selectedDepartment by remember { mutableStateOf<Departamento?>(null) }
-    
-    var departments by remember { 
-        mutableStateOf(listOf(
-            Departamento("d1", "emp1", "Ventas", "09:00", "18:00", "Planta 1", "Mañana"),
-            Departamento("d2", "emp1", "Soporte Técnico", "08:00", "16:00", "Planta 2", "Mañana")
-        ))
-    }
-    
-    // Map to keep track of employee counts (departamentoId -> count)
-    var departmentCounts by remember { mutableStateOf(mapOf("d1" to 5, "d2" to 3)) }
 
     Column(
         modifier = Modifier
@@ -75,7 +65,7 @@ fun AdminDepartmentsScreen(
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.SansSerif
                 )
-                
+
                 IconButton(
                     onClick = { showCreateDialog = true },
                     modifier = Modifier
@@ -92,10 +82,12 @@ fun AdminDepartmentsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(departments) { dep ->
+                // 🚀 Conectado al estado del ViewModel
+                items(vm.listaDepartamentosAdmin) { dep ->
                     DepartmentCard(
                         departamento = dep,
-                        employeeCount = departmentCounts[dep.departamentoId] ?: 0,
+                        // 🚀 Coge el número exacto calculado por el ViewModel
+                        employeeCount = vm.conteoEmpleadosPorDepto[dep.departamentoId] ?: 0,
                         onClick = { selectedDepartment = dep }
                     )
                 }
@@ -103,33 +95,33 @@ fun AdminDepartmentsScreen(
         }
 
         BottomNavBar(
-            currentScreen = NavScreen.DEPARTMENTS,
-            isJefe = vm.trabajadorActual?.rol == "JEFE",
+            currentScreen = NavScreen.EMPLOYEES,
             onNavigate = onNavigate
         )
     }
 
-    // Create Department Dialog
+    // Diálogo de creación conectado al ViewModel
     if (showCreateDialog) {
         CreateDepartmentDialog(
             onDismiss = { showCreateDialog = false },
             onCreate = { newDep ->
-                departments = departments + newDep
-                departmentCounts = departmentCounts + (newDep.departamentoId to 0)
-                showCreateDialog = false
+                vm.crearNuevoDepartamento(newDep) { exito ->
+                    if (exito) showCreateDialog = false
+                }
             }
         )
     }
 
-    // Assign Employees Dialog
+    // Diálogo de asignación conectado al ViewModel
     if (selectedDepartment != null) {
         AssignEmployeesDialog(
             departamento = selectedDepartment!!,
+            allEmployees = vm.listaTrabajadoresAdmin, // Le pasamos la lista de trabajadores de la BD
+            allDepartments = vm.listaDepartamentosAdmin, // 🚀 CORREGIDO: Le pasamos también la lista de deptos para validar nombres
             onDismiss = { selectedDepartment = null },
-            onUpdateCount = { newCount ->
-                departmentCounts = departmentCounts.toMutableMap().apply { 
-                    put(selectedDepartment!!.departamentoId, newCount) 
-                }
+            onConfirmAssignments = { listaIds ->
+                vm.actualizarEmpleadosDepartamento(selectedDepartment!!.departamentoId, listaIds)
+                selectedDepartment = null
             }
         )
     }
@@ -258,18 +250,17 @@ fun CreateDepartmentDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    if (nombre.isNotBlank()) {
-                        onCreate(
-                            Departamento(
-                                departamentoId = "d${System.currentTimeMillis()}",
-                                empresaId = "emp1",
-                                nombreDepartamento = nombre,
-                                horaEntrada = horaEntrada,
-                                horaSalida = horaSalida,
-                                ubicacionDepartamento = ubicacion,
-                                turno = turno
-                            )
+                    if (nombre.isNotBlank() && horaEntrada.isNotBlank() && horaSalida.isNotBlank()) {
+                        val datosFormulario = Departamento(
+                            departamentoId = null,
+                            empresaId = "",
+                            nombreDepartamento = nombre.trim(),
+                            horaEntrada = horaEntrada.trim(),
+                            horaSalida = horaSalida.trim(),
+                            ubicacionDepartamento = if (ubicacion.isBlank()) null else ubicacion.trim(),
+                            turno = if (turno.isBlank()) null else turno.trim()
                         )
+                        onCreate(datosFormulario)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
@@ -288,17 +279,20 @@ fun CreateDepartmentDialog(
 @Composable
 fun AssignEmployeesDialog(
     departamento: Departamento,
+    allEmployees: List<Trabajador>,
+    allDepartments: List<Departamento>,
     onDismiss: () -> Unit,
-    onUpdateCount: (Int) -> Unit
+    onConfirmAssignments: (Set<String>) -> Unit
 ) {
-    // Dummy list of employees
-    val allEmployees = listOf(
-        "Maria Garcia", "John Doe", "Alice Smith", "Bob Johnson", 
-        "Carlos Ruiz", "Elena Gomez", "Luis Perez"
-    )
-    
-    // Track assigned employees
-    var assignedEmployees by remember { mutableStateOf(setOf("Maria Garcia", "Alice Smith")) }
+    // Cargamos inicialmente los IDs de las personas que YA pertenecen a este departamento
+    var assignedEmployeeIds by remember {
+        mutableStateOf(
+            allEmployees.filter { it.departamentoId == departamento.departamentoId }.map { it.trabajadorId }.toSet()
+        )
+    }
+
+    var showConflictDialog by remember { mutableStateOf(false) }
+    var conflictMessage by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -307,22 +301,35 @@ fun AssignEmployeesDialog(
         text = {
             LazyColumn(modifier = Modifier.fillMaxHeight(0.6f)) {
                 items(allEmployees) { employee ->
-                    val isAssigned = assignedEmployees.contains(employee)
+                    val isAssigned = assignedEmployeeIds.contains(employee.trabajadorId)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                assignedEmployees = if (isAssigned) {
-                                    assignedEmployees - employee
+                                if (isAssigned) {
+                                    // Desmarcar de este departamento siempre es seguro
+                                    assignedEmployeeIds = assignedEmployeeIds - employee.trabajadorId
                                 } else {
-                                    assignedEmployees + employee
+                                    // 🔍 BUSQUEDA EXTERNA SEGURA:
+                                    // Comprobamos directamente el depto actual del trabajador en la lista inmutable de la BD
+                                    val deptoActualId = employee.departamentoId
+
+                                    if (deptoActualId != null && deptoActualId != departamento.departamentoId) {
+                                        // 🚨 BLOQUEO: Si tiene otro depto asignado en la BD, disparamos el pop-up informativo
+                                        val nombreDeptoOcupado = allDepartments.find { it.departamentoId == deptoActualId }?.nombreDepartamento ?: "otro"
+                                        conflictMessage = "${employee.nombre} ya está en el departamento $nombreDeptoOcupado. Debes desasignarlo de allí primero."
+                                        showConflictDialog = true
+                                    } else {
+                                        // Si está libre o pertenece a este, se añade al set local
+                                        assignedEmployeeIds = assignedEmployeeIds + employee.trabajadorId
+                                    }
                                 }
                             }
                             .padding(vertical = 12.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = employee, color = PrimaryTextWhite, fontSize = 16.sp)
+                        Text(text = "${employee.nombre} ${employee.apellidos ?: ""}", color = PrimaryTextWhite, fontSize = 16.sp)
                         if (isAssigned) {
                             Icon(Icons.Default.Check, contentDescription = "Asignado", tint = EmeraldGreen)
                         }
@@ -334,8 +341,7 @@ fun AssignEmployeesDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    onUpdateCount(assignedEmployees.size)
-                    onDismiss()
+                    onConfirmAssignments(assignedEmployeeIds)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
             ) {
@@ -343,4 +349,18 @@ fun AssignEmployeesDialog(
             }
         }
     )
+
+    if (showConflictDialog) {
+        AlertDialog(
+            onDismissRequest = { showConflictDialog = false },
+            containerColor = Color(0xFF1E1E1E),
+            title = { Text("Trabajador Ocupado", color = Color.Red, fontWeight = FontWeight.Bold) },
+            text = { Text(conflictMessage, color = PrimaryTextWhite) },
+            confirmButton = {
+                TextButton(onClick = { showConflictDialog = false }) {
+                    Text("Entendido", color = EmeraldGreen, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
 }
