@@ -18,10 +18,9 @@ import com.example.biogeo_check.data.network.SupabaseClient
 import com.example.biogeo_check.data.repository.AuthRepository
 import com.example.biogeo_check.data.repository.FichajeRepository
 import com.example.biogeo_check.ui.components.NavScreen
-import com.example.biogeo_check.ui.screens.AdminDashboardScreen
 import com.example.biogeo_check.ui.screens.AdminDepartmentsScreen
 import com.example.biogeo_check.ui.screens.AuthMasterScreen
-import com.example.biogeo_check.ui.screens.EmployeeDashboardScreen
+import com.example.biogeo_check.ui.screens.FichajeDashboardScreen
 import com.example.biogeo_check.ui.screens.LegalScreen
 import com.example.biogeo_check.ui.screens.UserProfileScreen
 import com.example.biogeo_check.ui.viewmodel.AuthViewModel
@@ -85,35 +84,30 @@ fun AppNavigation(
         composable("auth") {
             AuthMasterScreen(
                 viewModel = authViewModel,
-                onNavigateToDashboard = { isJefe ->
-                    val destination = if (isJefe) "admin_dashboard" else "employee_dashboard"
-                    navController.navigate(destination) {
+                onNavigateToDashboard = { _ ->
+                    // 🚀 CORREGIDO: Todo el mundo (sea jefe o no) va a "fichaje_dashboard"
+                    navController.navigate("fichaje_dashboard") {
                         popUpTo("auth") { inclusive = true }
                     }
                 }
             )
         }
 
-        composable("employee_dashboard") {
-            EmployeeDashboardScreen(
+        composable("fichaje_dashboard") {
+            FichajeDashboardScreen(
                 vm = dashboardViewModel,
                 onNavigate = { screen ->
+                    val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("employee_dashboard")
-                        NavScreen.HISTORY -> { }
-                        NavScreen.PROFILE -> navController.navigate("user_profile")
-                    }
-                }
-            )
-        }
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
 
-        composable("admin_dashboard") {
-            AdminDashboardScreen(
-                vm = dashboardViewModel,
-                onNavigate = { screen ->
-                    when (screen) {
-                        NavScreen.HOME -> navController.navigate("admin_dashboard")
-                        NavScreen.HISTORY -> navController.navigate("admin_departments")
+                        // 🚀 CORREGIDO CON TU COMENTARIO: Si es jefe pasa, si no, no hace nada
+                        NavScreen.HISTORY -> {
+                            if (esJefe) {
+                                navController.navigate("admin_departments")
+                            }
+                        }
+
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -125,8 +119,12 @@ fun AppNavigation(
                 vm = dashboardViewModel,
                 onNavigate = { screen ->
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("admin_dashboard")
-                        NavScreen.HISTORY -> navController.navigate("admin_departments")
+                        // 🚀 CORREGIDO: Vuelve a la ruta correcta "fichaje_dashboard"
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+
+                        // 🚀 CORREGIDO: Ya estamos aquí, se deja vacío
+                        NavScreen.HISTORY -> { /* Ya estamos aquí */ }
+
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -137,16 +135,25 @@ fun AppNavigation(
             UserProfileScreen(
                 vm = dashboardViewModel,
                 onNavigate = { screen ->
+                    val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        NavScreen.HOME -> navController.popBackStack()
-                        NavScreen.HISTORY -> navController.navigate("admin_departments")
-                        NavScreen.PROFILE -> navController.navigate("user_profile")
+                        // 🚀 CORREGIDO: Apunta a "fichaje_dashboard"
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+
+                        // 🚀 CORREGIDO: Si es jefe puede ir a ver los departamentos desde su perfil
+                        NavScreen.HISTORY -> {
+                            if (esJefe) {
+                                navController.navigate("admin_departments")
+                            }
+                        }
+
+                        NavScreen.PROFILE -> { /* Ya estamos aquí */ }
                     }
                 },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate("auth") {
-                        popUpTo(0)
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )

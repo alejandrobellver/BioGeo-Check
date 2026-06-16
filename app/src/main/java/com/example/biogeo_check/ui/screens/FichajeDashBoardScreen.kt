@@ -23,16 +23,19 @@ import com.example.biogeo_check.ui.theme.*
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 
 @Composable
-fun EmployeeDashboardScreen(
+fun FichajeDashboardScreen(
     vm: DashboardViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit
 ) {
     val trabajador = vm.trabajadorActual
     val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
+    val contrato = vm.tipoContrato
 
 
     LaunchedEffect(Unit) {
+        // 🚀 LA CLAVE: Cargamos los datos del perfil que sabemos que bajan el contrato perfecto
         vm.cargarDatosIniciales()
+        vm.cargarDatosPerfil()
     }
 
 
@@ -99,20 +102,36 @@ fun EmployeeDashboardScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
+            val minutosDinamicos = vm.listaContratos.find { it.contratoId == trabajador?.contratoId }?.descanso
+                ?: vm.listaContratos.firstOrNull()?.descanso
+                ?: 30
 
+            // TARJETA 1
             DashboardCard(
-                title = "Tiempo Trabajado Hoy",
-                value = vm.tiempoTrabajadoHoy
+                title = "Hora de Entrada",
+                value = vm.horaFichajeTexto
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
 
+            // TARJETA 2
             DashboardCard(
-                title = "Total de esta Semana",
-                value = vm.tiempoTrabajadoSemana
+                title = "Hora de Salida",
+                value = vm.horaSiguienteEventoTexto
             )
+
+            if(isClockedIn){
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                DashboardCard(
+                    title = "Tiempo de Descanso",
+                    value = "$minutosDinamicos minutos"
+                )
+            }
         }
+
 
 
         BottomNavBar(

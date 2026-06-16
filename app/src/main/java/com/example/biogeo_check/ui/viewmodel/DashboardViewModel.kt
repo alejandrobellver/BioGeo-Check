@@ -20,8 +20,9 @@ class DashboardViewModel(
     var ultimoFichaje by mutableStateOf<Fichaje?>(null)
     var listaContratos by mutableStateOf<List<TipoContrato>>(listOf())
     var contratoSeleccionadoId by mutableStateOf<String?>(null)
-    var tiempoTrabajadoHoy by mutableStateOf("00:00")
-    var tiempoTrabajadoSemana by mutableStateOf("00:00")
+
+    var horaFichajeTexto by mutableStateOf("")
+    var horaSiguienteEventoTexto by mutableStateOf("")
     var errorMessage by mutableStateOf<String?>(null)
 
     var departamento by mutableStateOf<Departamento?>(null)
@@ -41,6 +42,13 @@ class DashboardViewModel(
 
                 trabajadorActual?.let {
                     ultimoFichaje = fichajeRepository.obtenerUltimoFichaje(it.trabajadorId)
+
+                    // 🚀 1. Nos traemos el contrato de Supabase PRIMERO de forma síncrona
+                    it.contratoId?.let { cId ->
+                        tipoContrato = fichajeRepository.obtenerTipoContrato(cId)
+                    }
+
+                    // 🚀 2. AHORA SÍ, con el contrato ya guardado en memoria, calculamos las horas
                     calcularTiempoTrabajadoHoy()
                 }
             } catch (e: Exception) {
@@ -50,41 +58,38 @@ class DashboardViewModel(
     }
 
     private fun calcularTiempoTrabajadoHoy() {
-        val tId = trabajadorActual?.trabajadorId ?: return
-        viewModelScope.launch {
-            try {
-                val fichajes = fichajeRepository.obtenerFichajesDeHoy(tId)
-                var totalSegundos = 0L
-                var entradaParcial: java.time.Instant? = null
+        val trabajador = trabajadorActual ?: return
 
-                for (f in fichajes) {
-                    val hora = f.horaFichaje?.let { java.time.Instant.parse(it) } ?: continue
-                    if (f.tipoAccion == "ENTRADA") {
-                        entradaParcial = hora
-                    } else if (f.tipoAccion == "SALIDA" && entradaParcial != null) {
-                        totalSegundos += java.time.Duration.between(entradaParcial, hora).seconds
-                        entradaParcial = null
-                    }
-                }
-                
-                // Si está trabajando ahora mismo, sumamos el tiempo desde la última entrada hasta ahora
-                if (entradaParcial != null) {
-                    totalSegundos += java.time.Duration.between(entradaParcial, java.time.Instant.now()).seconds
-                }
+        val cal = java.util.Calendar.getInstance()
+        val horaActual = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        val minutoActual = cal.get(java.util.Calendar.MINUTE)
 
-                val horas = totalSegundos / 3600
-                val minutos = (totalSegundos % 3600) / 60
-                tiempoTrabajadoHoy = String.format("%02d:%02d", horas, minutos)
-                
-                // Temporalmente, hacemos que la semana sea igual al día para que no ponga 10.10,
-                // idealmente haríamos otra consulta obtenerFichajesDeSemana()
-                tiempoTrabajadoSemana = tiempoTrabajadoHoy
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        val horasSemanalesCelda = tipoContrato?.horasSemanales ?: 40
+
+        val horasJornadaDiaria = horasSemanalesCelda / 5
+
+        val esEntrada = ultimoFichaje?.tipoAccion == "ENTRADA"
+
+        if (esEntrada) {
+            val horaEntradaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+
+            val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
+            val horaSalidaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaSalidaCalculada, minutoActual)
+
+            // Asignamos fijas a las variables del Dashboard
+            horaFichajeTexto = horaEntradaTexto
+            horaSiguienteEventoTexto = horaSalidaTexto
+        } else {
+            val horaEntradaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+
+            val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
+            val horaSalidaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaSalidaCalculada, minutoActual)
+
+            // Asignamos fijas a las variables del Dashboard
+            horaFichajeTexto = horaEntradaTexto
+            horaSiguienteEventoTexto = horaSalidaTexto
         }
     }
-
     fun alternarFichaje() {
         val trabajador = trabajadorActual
         if (trabajador == null) {
@@ -96,6 +101,12 @@ class DashboardViewModel(
                 val siguienteAccion = if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
                 val nuevoLog = fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
                 ultimoFichaje = nuevoLog
+
+                // Recargamos el contrato por si acaso ha cambiado en el perfil
+                trabajador.contratoId?.let { cId ->
+                    tipoContrato = fichajeRepository.obtenerTipoContrato(cId)
+                }
+
                 calcularTiempoTrabajadoHoy()
                 errorMessage = null
             } catch (e: Exception) {

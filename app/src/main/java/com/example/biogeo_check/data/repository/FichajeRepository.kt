@@ -11,13 +11,11 @@ import io.github.jan.supabase.postgrest.query.Order
 
 class FichajeRepository(private val supabase: SupabaseClient) {
 
-
     suspend fun obtenerDepartamento(deptoId: String): Departamento? {
         return supabase.postgrest["departamento"]
             .select { filter { eq("departamento_id", deptoId) } }
             .decodeSingleOrNull<Departamento>()
     }
-
 
     suspend fun obtenerTipoContrato(contratoId: String): TipoContrato? {
         return supabase.postgrest["tipo_contrato"]
@@ -25,18 +23,15 @@ class FichajeRepository(private val supabase: SupabaseClient) {
             .decodeSingleOrNull<TipoContrato>()
     }
 
-
     suspend fun obtenerTodosLosDepartamentos(): List<Departamento> {
         return supabase.postgrest["departamento"].select().decodeList<Departamento>()
     }
-
 
     suspend fun obtenerTodosLosContratos(): List<TipoContrato> {
         return supabase.postgrest["tipo_contrato"]
             .select()
             .decodeList<TipoContrato>()
     }
-
 
     suspend fun actualizarTrabajador(trabajadorId: String, nuevoEmail: String, nuevoDeptoId: String?, nuevoContratoId: String?) {
         supabase.postgrest["trabajador"].update(
@@ -50,17 +45,15 @@ class FichajeRepository(private val supabase: SupabaseClient) {
         }
     }
 
-
     suspend fun obtenerPerfilTrabajador(trabajadorId: String): Trabajador? {
         return supabase.postgrest["trabajador"]
-            .select { filter {eq("trabajador_id", trabajadorId) }}
+            .select { filter { eq("trabajador_id", trabajadorId) } }
             .decodeSingleOrNull()
     }
-    fun obtenerIdUsuarioAutenticado(): String? {
 
+    fun obtenerIdUsuarioAutenticado(): String? {
         return supabase.auth.currentUserOrNull()?.id
     }
-
 
     suspend fun obtenerUltimoFichaje(trabajadorId: String): Fichaje? {
         return supabase.postgrest["fichaje"]
@@ -71,23 +64,14 @@ class FichajeRepository(private val supabase: SupabaseClient) {
             }.decodeList<Fichaje>().firstOrNull()
     }
 
-    suspend fun obtenerFichajesDeHoy(trabajadorId: String): List<Fichaje> {
-        val hoy = java.time.LocalDate.now().toString() // "YYYY-MM-DD"
-        return supabase.postgrest["fichaje"]
-            .select {
-                filter { 
-                    eq("trabajador_id", trabajadorId)
-                    gte("hora_fichaje", "${hoy}T00:00:00Z")
-                }
-                order(column = "hora_fichaje", order = Order.ASCENDING)
-            }.decodeList<Fichaje>()
-    }
-
-
     suspend fun registrarFichaje(trabajadorId: String, tipo: String): Fichaje {
+        val sdfIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+        sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        val timestampIso = sdfIso.format(java.util.Date())
+
         val nuevoRegistro = com.example.biogeo_check.data.model.FichajeInsert(
             trabajadorId = trabajadorId,
-            horaFichaje = java.time.Instant.now().toString(),
+            horaFichaje = timestampIso,
             tipoAccion = tipo,
             latitud = 40.416775,
             longitud = -3.703790
