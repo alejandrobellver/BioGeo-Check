@@ -86,9 +86,6 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
 
-    // Si la app se minimiza o recrea (y el SO mata la memoria),
-    // nos aseguramos de que el DashboardViewModel recargue quién es el usuario actual.
-    // Esto evita que el sistema te considere "desconocido" y bloquee la barra de navegación del Jefe.
     LaunchedEffect(Unit) {
         if (dashboardViewModel.trabajadorActual == null) {
             dashboardViewModel.cargarDatosIniciales()
@@ -111,7 +108,6 @@ fun AppNavigation(
             AuthMasterScreen(
                 viewModel = authViewModel,
                 onNavigateToDashboard = { _ ->
-                    // 🚀 CORREGIDO: Todo el mundo (sea jefe o no) va a "fichaje_dashboard"
                     navController.navigate("fichaje_dashboard") {
                         popUpTo("auth") { inclusive = true }
                     }

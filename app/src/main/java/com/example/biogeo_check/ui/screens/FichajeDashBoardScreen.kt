@@ -50,13 +50,6 @@ fun FichajeDashboardScreen(
         vm.cargarDatosPerfil()
     }
 
-
-    LaunchedEffect(trabajador) {
-        if (trabajador != null && trabajador.departamentoId == null) {
-            onNavigate(NavScreen.PROFILE)
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()

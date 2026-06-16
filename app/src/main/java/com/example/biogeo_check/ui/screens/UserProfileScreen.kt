@@ -169,7 +169,7 @@ fun UserProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (vm.editMode) {
+                if (vm.editMode && vm.trabajadorActual?.rol == "JEFE") {
                     var expanded by remember { mutableStateOf(false) }
                     val deptoSeleccionadoTexto =
                         vm.listaDepartamentos.find { it.departamentoId == vm.deptoSeleccionadoId }?.nombreDepartamento
@@ -224,10 +224,10 @@ fun UserProfileScreen(
 
             ProfileCard(
                 title = "Estadísticas de Trabajo",
-                actionIcon = true,
+                actionIcon = false,
                 onActionClick = { vm.editMode = !vm.editMode }
             ) {
-                if (vm.editMode) {
+                if (vm.editMode && vm.trabajadorActual?.rol == "JEFE") {
                     var expandedContrato by remember { mutableStateOf(false) }
                     val contratoSeleccionadoTexto =
                         vm.listaContratos.find { it.contratoId == vm.contratoSeleccionadoId }?.nombreContrato

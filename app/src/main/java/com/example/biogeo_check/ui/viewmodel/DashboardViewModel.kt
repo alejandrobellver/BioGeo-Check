@@ -414,7 +414,7 @@ class DashboardViewModel(
                         }
                     }
 
-                    com.example.biogeo_check.ui.screens.EmployeeStat(
+                    EmployeeStat(
                         name = "${empleado.nombre} ${empleado.apellidos}",
                         deptoName = deptoName,
                         status = estado,
