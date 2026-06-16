@@ -93,7 +93,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         nombreEmpresa: String,
         cif: String,
         direccion: String,
-        cp: String,
+        cp: Int,
         ciudad: String,
         nombreJefe: String,
         apellidosJefe: String,
@@ -170,6 +170,45 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
      * Útil para limpiar mensajes de error residuales en la pantalla cuando el usuario
      * interactúa de nuevo con los campos de texto.
      */
+    /**
+     * Lanza de forma asíncrona la petición de cambio de credenciales para el usuario activo.
+     */
+
+    /**
+     * Flujo seguro para cambiar la contraseña validando las credenciales actuales del usuario.
+     */
+    fun cambiarContrasenaSegura(
+        emailActual: String,
+        contrasenaVieja: String,
+        contrasenaNueva1: String,
+        contrasenaNueva2: String,
+        onResultado: (exito: Boolean, mensaje: String) -> Unit
+    ) {
+        viewModelScope.launch {
+            if (contrasenaVieja.isBlank() || contrasenaNueva1.isBlank() || contrasenaNueva2.isBlank()) {
+                onResultado(false, "Todos los campos son obligatorios.")
+                return@launch
+            }
+            if (contrasenaNueva1 != contrasenaNueva2) {
+                onResultado(false, "Las nuevas contraseñas no coinciden.")
+                return@launch
+            }
+            if (contrasenaNueva1.length < 6) {
+                onResultado(false, "La nueva contraseña debe tener al menos 6 caracteres.")
+                return@launch
+            }
+
+            try {
+                repository.login(emailActual, contrasenaVieja)
+                repository.cambiarContrasena(contrasenaNueva1)
+
+                onResultado(true, "¡Contraseña actualizada con éxito!")
+            } catch (e: Exception) {
+
+                onResultado(false, "La contraseña actual no es correcta o ha ocurrido un error.")
+            }
+        }
+    }
     fun resetState() {
         _authState.value = AuthState.Idle
     }

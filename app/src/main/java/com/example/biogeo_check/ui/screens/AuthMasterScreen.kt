@@ -160,8 +160,6 @@ fun AuthMasterScreen(
     }
 }
 
-// --- SUB-VISTAS DE LOS FORMULARIOS ---
-
 @Composable
 fun LoginView(vm: AuthViewModel, color: Color) {
     var email by remember { mutableStateOf("") }
@@ -331,7 +329,7 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
                     nombreEmpresa,
                     cif,
                     direccion,
-                    cp,
+                    cp = cp.toInt(),
                     ciudad,
                     nombreJefe,
                     apellidosJefe,

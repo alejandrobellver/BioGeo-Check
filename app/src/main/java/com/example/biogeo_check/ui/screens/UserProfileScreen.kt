@@ -21,14 +21,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -43,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,12 +59,14 @@ import com.example.biogeo_check.ui.theme.DarkGrayCard
 import com.example.biogeo_check.ui.theme.EmeraldGreen
 import com.example.biogeo_check.ui.theme.PrimaryTextWhite
 import com.example.biogeo_check.ui.theme.SecondaryTextGray
+import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
     vm: DashboardViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel(),
     onNavigate: (NavScreen) -> Unit,
     onLogout: () -> Unit
 ) {
@@ -70,6 +78,7 @@ fun UserProfileScreen(
     val trabajador = vm.trabajadorActual
     val depto = vm.departamento
     val contrato = vm.tipoContrato
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -84,7 +93,6 @@ fun UserProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
 
             Box(
                 modifier = Modifier
@@ -103,7 +111,6 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
             Text(
                 text = "${trabajador?.nombre ?: "Cargando..."} ${trabajador?.apellidos ?: ""}",
                 color = PrimaryTextWhite,
@@ -111,7 +118,6 @@ fun UserProfileScreen(
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.SansSerif
             )
-
 
             Text(
                 text = depto?.nombreDepartamento ?: "Sin departamento asignado",
@@ -122,7 +128,6 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-
             Text(
                 text = "Rol de acceso: ${trabajador?.rol ?: "DESCONOCIDO"}",
                 color = Color(0xFF666666),
@@ -132,13 +137,11 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
             ProfileCard(
                 title = "Información Personal",
                 actionIcon = true,
                 onActionClick = { vm.editMode = !vm.editMode }
             ) {
-
                 if (vm.editMode) {
                     Column {
                         Text(
@@ -165,7 +168,6 @@ fun UserProfileScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
 
                 if (vm.editMode) {
                     var expanded by remember { mutableStateOf(false) }
@@ -219,7 +221,6 @@ fun UserProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
 
             ProfileCard(
                 title = "Estadísticas de Trabajo",
@@ -314,19 +315,17 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-
             Text(
                 text = "Cambiar Contraseña",
                 color = EmeraldGreen,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
-                    .clickable { /* Handle Change Password */ }
+                    .clickable { showChangePasswordDialog = true }
                     .padding(8.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-
 
             if (vm.editMode) {
                 Button(
@@ -368,6 +367,122 @@ fun UserProfileScreen(
             currentScreen = NavScreen.PROFILE,
             isJefe = trabajador?.rol == "JEFE",
             onNavigate = onNavigate
+        )
+    }
+
+    if (showChangePasswordDialog) {
+        var passVieja by remember { mutableStateOf("") }
+        var passNueva1 by remember { mutableStateOf("") }
+        var passNueva2 by remember { mutableStateOf("") }
+        var mensajeFeedback by remember { mutableStateOf("") }
+        var esErrorFeedback by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showChangePasswordDialog = false },
+            containerColor = DarkGrayCard,
+            title = { Text("Seguridad: Cambiar Contraseña", color = EmeraldGreen, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Confirma tus credenciales actuales antes de establecer la nueva contraseña.",
+                        color = SecondaryTextGray,
+                        fontSize = 14.sp
+                    )
+
+                    OutlinedTextField(
+                        value = passVieja,
+                        onValueChange = { passVieja = it },
+                        label = { Text("Contraseña Actual", color = SecondaryTextGray) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = PrimaryTextWhite,
+                            unfocusedTextColor = PrimaryTextWhite,
+                            focusedBorderColor = EmeraldGreen
+                        ),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    HorizontalDivider(color = Color(0xFF2A2A2A), modifier = Modifier.padding(vertical = 4.dp))
+
+                    OutlinedTextField(
+                        value = passNueva1,
+                        onValueChange = { passNueva1 = it },
+                        label = { Text("Nueva Contraseña", color = SecondaryTextGray) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = PrimaryTextWhite,
+                            unfocusedTextColor = PrimaryTextWhite,
+                            focusedBorderColor = EmeraldGreen
+                        ),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = passNueva2,
+                        onValueChange = { passNueva2 = it },
+                        label = { Text("Repetir Nueva Contraseña", color = SecondaryTextGray) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = PrimaryTextWhite,
+                            unfocusedTextColor = PrimaryTextWhite,
+                            focusedBorderColor = EmeraldGreen
+                        ),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Notificaciones internas de éxito/error dinámicas
+                    if (mensajeFeedback.isNotBlank()) {
+                        Text(
+                            text = mensajeFeedback,
+                            color = if (esErrorFeedback) Color(0xFFEF4444) else EmeraldGreen,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val emailUsuario = trabajador?.email ?: ""
+
+                        if (emailUsuario.isBlank()) {
+                            mensajeFeedback = "Error: Sesión de usuario no válida."
+                            esErrorFeedback = true
+                            return@Button
+                        }
+
+                        // Dispara el validador seguro del AuthViewModel
+                        authViewModel.cambiarContrasenaSegura(
+                            emailActual = emailUsuario,
+                            contrasenaVieja = passVieja.trim(),
+                            contrasenaNueva1 = passNueva1.trim(),
+                            contrasenaNueva2 = passNueva2.trim()
+                        ) { exito, mensaje ->
+                            mensajeFeedback = mensaje
+                            esErrorFeedback = !exito
+                            if (exito) {
+                                // Limpieza preventiva si la operación fue exitosa
+                                passVieja = ""
+                                passNueva1 = ""
+                                passNueva2 = ""
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
+                ) {
+                    Text("Actualizar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showChangePasswordDialog = false }) {
+                    Text("Cancelar", color = SecondaryTextGray)
+                }
+            }
         )
     }
 }

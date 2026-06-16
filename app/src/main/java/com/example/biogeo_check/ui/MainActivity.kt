@@ -171,10 +171,10 @@ fun AppNavigation(
         composable("user_profile") {
             UserProfileScreen(
                 vm = dashboardViewModel,
+                authViewModel = authViewModel,
                 onNavigate = { screen ->
                     val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        // 🚀 CORREGIDO: Apunta a "fichaje_dashboard"
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
 
                         NavScreen.EMPLOYEES -> {

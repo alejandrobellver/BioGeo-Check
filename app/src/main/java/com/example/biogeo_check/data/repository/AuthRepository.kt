@@ -50,7 +50,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
         nombreEmpresa: String,
         cif: String,
         direccion: String,
-        cp: String,
+        cp: Int ,
         ciudad: String,
         nombreJefe: String,
         apellidosJefe: String,
@@ -172,6 +172,17 @@ class AuthRepository(private val supabase: SupabaseClient) {
         return trabajador
             ?: throw Exception("No se encontró el perfil de este trabajador en la empresa.")
     }
+
+
+
+        /**
+         * Actualiza la contraseña del usuario actualmente autenticado en Supabase.
+         */
+        suspend fun cambiarContrasena(nuevaContrasena: String) {
+            supabase.auth.updateUser {
+                password = nuevaContrasena
+            }
+        }
 
     /**
      * Destruye de forma segura los tokens de acceso locales y finaliza la sesión activa del usuario actual en el servidor.
