@@ -5,10 +5,10 @@ import com.example.biogeo_check.data.model.Fichaje
 import com.example.biogeo_check.data.model.TipoContrato
 import com.example.biogeo_check.data.model.Trabajador
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
-import io.github.jan.supabase.functions.functions
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -67,7 +67,12 @@ class FichajeRepository(private val supabase: SupabaseClient) {
      * @param nuevoDeptoId El identificador del nuevo departamento asignado (puede ser null).
      * @param nuevoContratoId El identificador del nuevo tipo de contrato asignado (puede ser null).
      */
-    suspend fun actualizarTrabajador(trabajadorId: String, nuevoEmail: String, nuevoDeptoId: String?, nuevoContratoId: String?) {
+    suspend fun actualizarTrabajador(
+        trabajadorId: String,
+        nuevoEmail: String,
+        nuevoDeptoId: String?,
+        nuevoContratoId: String?
+    ) {
         supabase.postgrest["trabajador"].update(
             {
                 set("email", nuevoEmail)
@@ -212,7 +217,8 @@ class FichajeRepository(private val supabase: SupabaseClient) {
      * @return El objeto [Fichaje] completo persistido en la base de datos.
      */
     suspend fun registrarFichaje(trabajadorId: String, tipo: String): Fichaje {
-        val sdfIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+        val sdfIso =
+            java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
         sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
         val timestampIso = sdfIso.format(java.util.Date())
 
@@ -248,8 +254,9 @@ class FichajeRepository(private val supabase: SupabaseClient) {
         cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
         cal.set(java.util.Calendar.MINUTE, 0)
         cal.set(java.util.Calendar.SECOND, 0)
-        
-        val sdfIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+
+        val sdfIso =
+            java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
         sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
         val startOfDayUtc = sdfIso.format(cal.time)
 

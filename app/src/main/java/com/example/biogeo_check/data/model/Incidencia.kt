@@ -1,4 +1,5 @@
 package com.example.biogeo_check.data.model
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -52,26 +52,25 @@ class AuthRepository(private val supabase: SupabaseClient) {
         direccion: String,
         nombreJefe: String,
         apellidosJefe: String,
-        dniJefe: String,
-        listaInvitados: List<String>
+        dniJefe: String
     ) {
-        val authResponse = supabase.auth.signUpWith(Email) {
-            this.email = email
-            password = contrasena
-        }
-        val userId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
-
         val nuevaEmpresa = Empresa(
             nombreEmpresa = nombreEmpresa,
             cif = cif,
             direccion = direccion
         )
-        val empresaInsertada = supabase.postgrest["empresa"].insert(nuevaEmpresa) {
-            select()
-        }.decodeSingle<Empresa>()
+        val empresaInsertada = supabase.postgrest["empresa"]
+            .insert(nuevaEmpresa) { select() }
+            .decodeSingle<Empresa>()
+
+        val authResponse = supabase.auth.signUpWith(Email) {
+            this.email = email
+            password = contrasena
+        }
+        val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
 
         val nuevoJefe = Trabajador(
-            trabajadorId = userId,
+            trabajadorId = nuevoUserId,
             empresaId = empresaInsertada.empresaId,
             nombre = nombreJefe,
             apellidos = apellidosJefe,
@@ -80,18 +79,6 @@ class AuthRepository(private val supabase: SupabaseClient) {
             rol = "JEFE"
         )
         supabase.postgrest["trabajador"].insert(nuevoJefe)
-
-        val listaTrabajadoresAInsertar = listaInvitados.map { emailEmpleado ->
-            Invitacion(
-                email = emailEmpleado,
-                empresaId = empresaInsertada.empresaId,
-                rol = "TRABAJADOR"
-            )
-        }
-
-        if (listaTrabajadoresAInsertar.isNotEmpty()) {
-            supabase.postgrest["invitaciones"].insert(listaTrabajadoresAInsertar)
-        }
     }
 
     /**
@@ -169,13 +156,15 @@ class AuthRepository(private val supabase: SupabaseClient) {
             this.email = email
             password = contrasena
         }
-        val userId = supabase.auth.currentUserOrNull()?.id ?: throw Exception("Error al iniciar sesión en el sistema")
+        val userId = supabase.auth.currentUserOrNull()?.id
+            ?: throw Exception("Error al iniciar sesión en el sistema")
 
         val trabajador = supabase.postgrest["trabajador"]
             .select { filter { eq("trabajador_id", userId) } }
             .decodeSingleOrNull<Trabajador>()
 
-        return trabajador ?: throw Exception("No se encontró el perfil de este trabajador en la empresa.")
+        return trabajador
+            ?: throw Exception("No se encontró el perfil de este trabajador en la empresa.")
     }
 
     /**

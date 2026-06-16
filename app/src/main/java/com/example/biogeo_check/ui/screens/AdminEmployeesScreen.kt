@@ -1,24 +1,38 @@
 package com.example.biogeo_check.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,10 +42,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
-import com.example.biogeo_check.ui.theme.*
+import com.example.biogeo_check.ui.theme.AlternatingRowDark
+import com.example.biogeo_check.ui.theme.BlackBackground
+import com.example.biogeo_check.ui.theme.DarkGrayCard
+import com.example.biogeo_check.ui.theme.EmeraldGreen
+import com.example.biogeo_check.ui.theme.PrimaryTextWhite
+import com.example.biogeo_check.ui.theme.SecondaryTextGray
+import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 
 data class EmployeeStat(
     val name: String,
@@ -76,14 +95,24 @@ fun AdminDashboardScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                MetricCard(title = "Horas\nTotales", value = vm.totalHorasEquipo, modifier = Modifier.weight(1f))
-                MetricCard(title = "Activos\nHoy", value = vm.activosHoy, modifier = Modifier.weight(1f))
+                MetricCard(
+                    title = "Horas\nTotales",
+                    value = vm.totalHorasEquipo,
+                    modifier = Modifier.weight(1f)
+                )
+                MetricCard(
+                    title = "Activos\nHoy",
+                    value = vm.activosHoy,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -96,14 +125,18 @@ fun AdminDashboardScreen(
                 )
 
                 Button(
-                    onClick = { 
+                    onClick = {
                         vm.inviteError = null
-                        vm.showInviteDialog = true 
+                        vm.showInviteDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir", tint = PrimaryTextWhite)
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Añadir",
+                        tint = PrimaryTextWhite
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Invitar", color = PrimaryTextWhite, fontWeight = FontWeight.Bold)
                 }
@@ -117,7 +150,7 @@ fun AdminDashboardScreen(
             ) {
                 itemsIndexed(vm.teamStats) { index, stat ->
                     val bgColor = if (index % 2 == 0) BlackBackground else AlternatingRowDark
-                    
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -143,13 +176,17 @@ fun AdminDashboardScreen(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier
-                                        .background(Color(0xFF00C853).copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                        .background(
+                                            Color(0xFF00C853).copy(alpha = 0.1f),
+                                            RoundedCornerShape(4.dp)
+                                        )
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                val statusColor = if (stat.status == "Fichado") EmeraldGreen else SecondaryTextGray
+                                val statusColor =
+                                    if (stat.status == "Fichado") EmeraldGreen else SecondaryTextGray
                                 Box(
                                     modifier = Modifier
                                         .size(8.dp)
@@ -196,16 +233,21 @@ fun AdminDashboardScreen(
         // Invite Dialog
         if (vm.showInviteDialog) {
             AlertDialog(
-                onDismissRequest = { 
+                onDismissRequest = {
                     vm.inviteError = null
-                    vm.showInviteDialog = false 
+                    vm.showInviteDialog = false
                 },
                 containerColor = DarkGrayCard,
                 title = { Text("Invitar Empleado", color = PrimaryTextWhite) },
                 text = {
                     Column {
                         vm.inviteError?.let {
-                            Text(text = it, color = Color.Red, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(
+                                text = it,
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
                         }
                         TextField(
                             value = vm.inviteEmail,
@@ -217,16 +259,27 @@ fun AdminDashboardScreen(
                                 focusedContainerColor = BlackBackground,
                                 unfocusedContainerColor = BlackBackground
                             ),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
                         )
-                        
+
                         var deptoExpanded by remember { mutableStateOf(false) }
-                        val deptoName = vm.listaDepartamentos.find { it.departamentoId == vm.inviteDeptoId }?.nombreDepartamento ?: "Seleccionar Departamento"
-                        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                            OutlinedButton(onClick = { deptoExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        val deptoName =
+                            vm.listaDepartamentos.find { it.departamentoId == vm.inviteDeptoId }?.nombreDepartamento
+                                ?: "Seleccionar Departamento"
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)) {
+                            OutlinedButton(
+                                onClick = { deptoExpanded = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(deptoName, color = PrimaryTextWhite)
                             }
-                            DropdownMenu(expanded = deptoExpanded, onDismissRequest = { deptoExpanded = false }) {
+                            DropdownMenu(
+                                expanded = deptoExpanded,
+                                onDismissRequest = { deptoExpanded = false }) {
                                 vm.listaDepartamentos.forEach { depto ->
                                     DropdownMenuItem(
                                         text = { Text(depto.nombreDepartamento) },
@@ -240,12 +293,21 @@ fun AdminDashboardScreen(
                         }
 
                         var contratoExpanded by remember { mutableStateOf(false) }
-                        val contratoName = vm.listaContratos.find { it.contratoId == vm.inviteContratoId }?.nombreContrato ?: "Seleccionar Contrato"
-                        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                            OutlinedButton(onClick = { contratoExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        val contratoName =
+                            vm.listaContratos.find { it.contratoId == vm.inviteContratoId }?.nombreContrato
+                                ?: "Seleccionar Contrato"
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)) {
+                            OutlinedButton(
+                                onClick = { contratoExpanded = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                                 Text(contratoName, color = PrimaryTextWhite)
                             }
-                            DropdownMenu(expanded = contratoExpanded, onDismissRequest = { contratoExpanded = false }) {
+                            DropdownMenu(
+                                expanded = contratoExpanded,
+                                onDismissRequest = { contratoExpanded = false }) {
                                 vm.listaContratos.forEach { contrato ->
                                     DropdownMenuItem(
                                         text = { Text("${contrato.nombreContrato} (${contrato.horasSemanales}h)") },
@@ -268,9 +330,9 @@ fun AdminDashboardScreen(
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(onClick = { 
+                    OutlinedButton(onClick = {
                         vm.inviteError = null
-                        vm.showInviteDialog = false 
+                        vm.showInviteDialog = false
                     }) {
                         Text("Cancelar", color = PrimaryTextWhite)
                     }

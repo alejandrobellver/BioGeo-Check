@@ -56,7 +56,10 @@ class DepartmentsViewModel(
         }
     }
 
-    fun actualizarEmpleadosDepartamento(departamentoId: String?, empleadosSeleccionadosIds: Set<String>) {
+    fun actualizarEmpleadosDepartamento(
+        departamentoId: String?,
+        empleadosSeleccionadosIds: Set<String>
+    ) {
         viewModelScope.launch {
             try {
                 listaTrabajadoresAdmin.forEach { trabajador ->
@@ -64,9 +67,15 @@ class DepartmentsViewModel(
                     val perteneceAhora = empleadosSeleccionadosIds.contains(trabajador.trabajadorId)
 
                     if (perteneceAntes && !perteneceAhora) {
-                        fichajeRepository.actualizarDepartamentoDeTrabajador(trabajador.trabajadorId, null)
+                        fichajeRepository.actualizarDepartamentoDeTrabajador(
+                            trabajador.trabajadorId,
+                            null
+                        )
                     } else if (!perteneceAntes && perteneceAhora) {
-                        fichajeRepository.actualizarDepartamentoDeTrabajador(trabajador.trabajadorId, departamentoId)
+                        fichajeRepository.actualizarDepartamentoDeTrabajador(
+                            trabajador.trabajadorId,
+                            departamentoId
+                        )
                     }
                 }
                 // Refrescamos

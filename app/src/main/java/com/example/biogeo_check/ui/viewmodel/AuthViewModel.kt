@@ -2,8 +2,8 @@ package com.example.biogeo_check.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.biogeo_check.data.repository.AuthRepository
 import com.example.biogeo_check.data.model.Trabajador
+import com.example.biogeo_check.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +40,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 _authState.value = AuthState.Success(trabajador)
             } catch (e: Exception) {
                 // Si falla, atrapamos el error y lo enviamos a la UI
-                _authState.value = AuthState.Error(e.message ?: "Error desconocido al iniciar sesión")
+                _authState.value =
+                    AuthState.Error(e.message ?: "Error desconocido al iniciar sesión")
             }
         }
     }
@@ -53,8 +54,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         direccion: String,
         nombreJefe: String,
         apellidosJefe: String,
-        dniJefe: String,
-        listaInvitados: List<String> // 👈 Añadimos los nuevos parámetros
+        dniJefe: String
     ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -68,8 +68,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     direccion = direccion,
                     nombreJefe = nombreJefe,
                     apellidosJefe = apellidosJefe,
-                    dniJefe = dniJefe,
-                    listaInvitados = listaInvitados
+                    dniJefe = dniJefe
                 )
 
                 // Si todo va bien, pasamos al estado de éxito
@@ -92,7 +91,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                repository.activarCuentaTrabajador(email, contrasena, nombre, apellidos,dni)
+                repository.activarCuentaTrabajador(email, contrasena, nombre, apellidos, dni)
                 _authState.value = AuthState.Success(null)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error al activar la cuenta")

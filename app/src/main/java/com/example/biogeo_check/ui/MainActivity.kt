@@ -1,13 +1,13 @@
 package com.example.biogeo_check.ui
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,7 +27,7 @@ import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -54,9 +54,14 @@ class MainActivity : ComponentActivity() {
                             return DashboardViewModel(fichajeRepository) as T
                         }
                     }
-                    val dashboardViewModel: DashboardViewModel = viewModel(factory = dashboardViewModelFactory)
+                    val dashboardViewModel: DashboardViewModel =
+                        viewModel(factory = dashboardViewModelFactory)
 
-                    AppNavigation(authViewModel = authViewModel, dashboardViewModel = dashboardViewModel, departmentsViewModel = DepartmentsViewModel(fichajeRepository))
+                    AppNavigation(
+                        authViewModel = authViewModel,
+                        dashboardViewModel = dashboardViewModel,
+                        departmentsViewModel = DepartmentsViewModel(fichajeRepository)
+                    )
                 }
             }
         }
@@ -109,6 +114,7 @@ fun AppNavigation(
                                 navController.navigate("admin_employees")
                             }
                         }
+
                         NavScreen.DEPARTMENTS -> {
                             if (esJefe) {
                                 navController.navigate("admin_departments")
@@ -128,8 +134,13 @@ fun AppNavigation(
                     val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
-                        NavScreen.EMPLOYEES -> { /* Ya estamos aquí */ }
-                        NavScreen.DEPARTMENTS -> { if (esJefe) navController.navigate("admin_departments") }
+                        NavScreen.EMPLOYEES -> { /* Ya estamos aquí */
+                        }
+
+                        NavScreen.DEPARTMENTS -> {
+                            if (esJefe) navController.navigate("admin_departments")
+                        }
+
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
                 }
@@ -148,7 +159,8 @@ fun AppNavigation(
                             if (esJefe) navController.navigate("admin_employees")
                         }
 
-                        NavScreen.DEPARTMENTS -> { /* Ya estamos aquí */ }
+                        NavScreen.DEPARTMENTS -> { /* Ya estamos aquí */
+                        }
 
                         NavScreen.PROFILE -> navController.navigate("user_profile")
                     }
@@ -170,13 +182,15 @@ fun AppNavigation(
                                 navController.navigate("admin_employees")
                             }
                         }
+
                         NavScreen.DEPARTMENTS -> {
                             if (esJefe) {
                                 navController.navigate("admin_departments")
                             }
                         }
 
-                        NavScreen.PROFILE -> { /* Ya estamos aquí */ }
+                        NavScreen.PROFILE -> { /* Ya estamos aquí */
+                        }
                     }
                 },
                 onLogout = {

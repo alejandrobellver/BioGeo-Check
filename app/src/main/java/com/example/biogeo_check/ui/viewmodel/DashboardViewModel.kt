@@ -85,25 +85,38 @@ class DashboardViewModel(
         val esEntrada = ultimoFichaje?.tipoAccion == "ENTRADA"
 
         if (esEntrada) {
-            val horaEntradaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+            val horaEntradaTexto =
+                String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
 
             val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
-            val horaSalidaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaSalidaCalculada, minutoActual)
+            val horaSalidaTexto = String.format(
+                java.util.Locale.getDefault(),
+                "%02d:%02d",
+                horaSalidaCalculada,
+                minutoActual
+            )
 
             // Asignamos fijas a las variables del Dashboard
             horaFichajeTexto = horaEntradaTexto
             horaSiguienteEventoTexto = horaSalidaTexto
         } else {
-            val horaEntradaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+            val horaEntradaTexto =
+                String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
 
             val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
-            val horaSalidaTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", horaSalidaCalculada, minutoActual)
+            val horaSalidaTexto = String.format(
+                java.util.Locale.getDefault(),
+                "%02d:%02d",
+                horaSalidaCalculada,
+                minutoActual
+            )
 
             // Asignamos fijas a las variables del Dashboard
             horaFichajeTexto = horaEntradaTexto
             horaSiguienteEventoTexto = horaSalidaTexto
         }
     }
+
     fun alternarFichaje() {
         val trabajador = trabajadorActual
         if (trabajador == null) {
@@ -112,8 +125,10 @@ class DashboardViewModel(
         }
         viewModelScope.launch {
             try {
-                val siguienteAccion = if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
-                val nuevoLog = fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
+                val siguienteAccion =
+                    if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
+                val nuevoLog =
+                    fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
                 ultimoFichaje = nuevoLog
 
                 // Recargamos el contrato por si acaso ha cambiado en el perfil
@@ -186,7 +201,12 @@ class DashboardViewModel(
         val tId = trabajadorActual?.trabajadorId ?: return
         viewModelScope.launch {
             try {
-                fichajeRepository.actualizarTrabajador(tId, emailInput, deptoSeleccionadoId, contratoSeleccionadoId)
+                fichajeRepository.actualizarTrabajador(
+                    tId,
+                    emailInput,
+                    deptoSeleccionadoId,
+                    contratoSeleccionadoId
+                )
 
                 editMode = false
                 val perfilActualizado = fichajeRepository.obtenerPerfilTrabajador(tId)
@@ -203,16 +223,17 @@ class DashboardViewModel(
             try {
                 val empresaId = trabajadorActual?.empresaId ?: return@launch
                 listaTrabajadores = fichajeRepository.obtenerTrabajadoresPorEmpresa(empresaId)
-                
+
                 val trabajadorIds = listaTrabajadores.map { it.trabajadorId }
                 val fichajesHoy = fichajeRepository.obtenerFichajesDeTrabajadoresHoy(trabajadorIds)
-                
+
                 var activos = 0
                 var minTotalesEquipo = 0L
 
                 val stats = listaTrabajadores.map { empleado ->
-                    val susFichajes = fichajesHoy.filter { it.trabajadorId == empleado.trabajadorId }
-                    
+                    val susFichajes =
+                        fichajesHoy.filter { it.trabajadorId == empleado.trabajadorId }
+
                     var estado = "Ausente"
                     if (susFichajes.isNotEmpty()) {
                         val ultimo = susFichajes.last().tipoAccion
@@ -234,7 +255,10 @@ class DashboardViewModel(
                             if (!cleanStr.endsWith("Z")) {
                                 cleanStr += "Z"
                             }
-                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
+                            val sdf = java.text.SimpleDateFormat(
+                                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                                java.util.Locale.getDefault()
+                            )
                             sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
                             return sdf.parse(cleanStr)
                         } catch (e: Exception) {
@@ -258,7 +282,9 @@ class DashboardViewModel(
                                     ultimaEntrada = null
                                 }
                             }
-                        } catch (e: Exception) { e.printStackTrace() }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
 
                     if (ultimaEntrada != null && estado == "Fichado") {
@@ -272,8 +298,10 @@ class DashboardViewModel(
                     val m = minutosTrabajados % 60
                     val horasTexto = String.format(java.util.Locale.getDefault(), "%02d:%02d", h, m)
 
-                    val deptoName = listaDepartamentos.find { it.departamentoId == empleado.departamentoId }?.nombreDepartamento ?: "Sin departamento"
-                    
+                    val deptoName =
+                        listaDepartamentos.find { it.departamentoId == empleado.departamentoId }?.nombreDepartamento
+                            ?: "Sin departamento"
+
                     var lastTimeStr = "--:--"
                     if (susFichajes.isNotEmpty()) {
                         val ultimoFichajeHora = susFichajes.last().horaFichaje
@@ -281,10 +309,15 @@ class DashboardViewModel(
                             try {
                                 val date = parseSupabaseDate(ultimoFichajeHora)
                                 if (date != null) {
-                                    val sdfLocal = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                                    val sdfLocal = java.text.SimpleDateFormat(
+                                        "HH:mm",
+                                        java.util.Locale.getDefault()
+                                    )
                                     lastTimeStr = sdfLocal.format(date)
                                 }
-                            } catch (e: Exception) { e.printStackTrace() }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
                         }
                     }
 
@@ -319,7 +352,7 @@ class DashboardViewModel(
                 inviteError = "Selecciona un departamento y un contrato"
                 return@launch
             }
-            
+
             val empresaId = trabajadorActual?.empresaId
             if (empresaId == null) {
                 inviteError = "Error: no se encontró tu ID de empresa"
@@ -349,7 +382,7 @@ class DashboardViewModel(
                 if (e.message?.contains("500") == true || e.message?.contains("400") == true) {
                     inviteError = "Este correo ya está registrado o hay un error de conexión."
                 }
-                
+
                 viewModelScope.launch {
                     kotlinx.coroutines.delay(5000)
                     inviteError = null
@@ -361,21 +394,46 @@ class DashboardViewModel(
     private fun obtenerMensajeErrorHumano(e: Exception): String {
         val msg = e.toString()
         return when {
-            msg.contains("User already registered", ignoreCase = true) || msg.contains("already exists", ignoreCase = true) -> 
+            msg.contains(
+                "User already registered",
+                ignoreCase = true
+            ) || msg.contains("already exists", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado en el sistema."
-            msg.contains("duplicate key value", ignoreCase = true) || msg.contains("invitaciones_email_key", ignoreCase = true) -> 
+
+            msg.contains(
+                "duplicate key value",
+                ignoreCase = true
+            ) || msg.contains("invitaciones_email_key", ignoreCase = true) ->
                 "Este correo ya ha sido invitado."
-            msg.contains("Network", ignoreCase = true) || msg.contains("UnknownHost", ignoreCase = true) || msg.contains("ConnectException", ignoreCase = true) -> 
+
+            msg.contains("Network", ignoreCase = true) || msg.contains(
+                "UnknownHost",
+                ignoreCase = true
+            ) || msg.contains("ConnectException", ignoreCase = true) ->
                 "Comprueba tu conexión a internet."
-            msg.contains("timeout", ignoreCase = true) -> 
+
+            msg.contains("timeout", ignoreCase = true) ->
                 "La conexión ha tardado demasiado, inténtalo de nuevo."
-            msg.contains("invalid email", ignoreCase = true) || msg.contains("Valid email", ignoreCase = true) -> 
+
+            msg.contains("invalid email", ignoreCase = true) || msg.contains(
+                "Valid email",
+                ignoreCase = true
+            ) ->
                 "El formato del correo no es válido."
-            msg.contains("not found", ignoreCase = true) -> 
+
+            msg.contains("not found", ignoreCase = true) ->
                 "No se ha encontrado la información."
-            msg.contains("500", ignoreCase = true) || msg.contains("400", ignoreCase = true) || msg.contains("ServerResponseException", ignoreCase = true) || msg.contains("RestException", ignoreCase = true) -> 
+
+            msg.contains("500", ignoreCase = true) || msg.contains(
+                "400",
+                ignoreCase = true
+            ) || msg.contains(
+                "ServerResponseException",
+                ignoreCase = true
+            ) || msg.contains("RestException", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado."
-            else -> 
+
+            else ->
                 "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
         }
     }

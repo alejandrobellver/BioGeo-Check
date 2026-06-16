@@ -1,13 +1,21 @@
 package com.example.biogeo_check.ui.screens
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,11 +24,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.ui.components.BottomNavBar
 import com.example.biogeo_check.ui.components.NavScreen
-import com.example.biogeo_check.ui.theme.*
+import com.example.biogeo_check.ui.theme.BlackBackground
+import com.example.biogeo_check.ui.theme.DarkGrayCard
+import com.example.biogeo_check.ui.theme.DarkRed
+import com.example.biogeo_check.ui.theme.EmeraldGreen
+import com.example.biogeo_check.ui.theme.PrimaryTextWhite
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
+import com.example.biogeo_check.util.BiometricHelper
 
 @Composable
 fun FichajeDashboardScreen(
@@ -29,8 +43,7 @@ fun FichajeDashboardScreen(
 ) {
     val trabajador = vm.trabajadorActual
     val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
-    val contrato = vm.tipoContrato
-
+    val activity = LocalActivity.current as? FragmentActivity
 
     LaunchedEffect(Unit) {
         // 🚀 LA CLAVE: Cargamos los datos del perfil que sabemos que bajan el contrato perfecto
@@ -53,9 +66,9 @@ fun FichajeDashboardScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(16.dp)
+                .padding(24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
 
             Text(
@@ -81,7 +94,21 @@ fun FichajeDashboardScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = { vm.alternarFichaje() },
+                    onClick = {
+                        if (activity != null) {
+                            BiometricHelper.authenticate(
+                                activity = activity,
+                                onSuccess = {
+                                    vm.alternarFichaje()
+                                },
+                                onError = { errorMsg ->
+                                    vm.errorMessage = errorMsg
+                                }
+                            )
+                        } else {
+                            vm.errorMessage = "Error: La actividad no es compatible con biometría."
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(80.dp),
@@ -102,9 +129,10 @@ fun FichajeDashboardScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            val minutosDinamicos = vm.listaContratos.find { it.contratoId == trabajador?.contratoId }?.descanso
-                ?: vm.listaContratos.firstOrNull()?.descanso
-                ?: 30
+            val minutosDinamicos =
+                vm.listaContratos.find { it.contratoId == trabajador?.contratoId }?.descanso
+                    ?: vm.listaContratos.firstOrNull()?.descanso
+                    ?: 30
 
             // TARJETA 1
             DashboardCard(
@@ -121,7 +149,7 @@ fun FichajeDashboardScreen(
                 value = vm.horaSiguienteEventoTexto
             )
 
-            if(isClockedIn){
+            if (isClockedIn) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 

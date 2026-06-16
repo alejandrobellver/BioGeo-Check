@@ -2,7 +2,13 @@ package com.example.biogeo_check.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,7 +40,7 @@ fun LegalScreen(
             .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Text(
             text = "Términos y Condiciones",
             color = EmeraldGreen,
@@ -45,7 +51,7 @@ fun LegalScreen(
         )
 
         val scrollState = rememberScrollState()
-        
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -64,9 +70,9 @@ fun LegalScreen(
                 lineHeight = 24.sp
             )
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -84,7 +90,7 @@ fun LegalScreen(
             ) {
                 Text("Aceptar y Continuar", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
-            
+
             OutlinedButton(
                 onClick = onDecline,
                 modifier = Modifier
