@@ -11,9 +11,9 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.client.statement.bodyAsText
 
 class FichajeRepository(private val supabase: SupabaseClient) {
 
@@ -242,7 +242,11 @@ class FichajeRepository(private val supabase: SupabaseClient) {
             setBody(invitacion)
         }
         if (response.status.value !in 200..299) {
-            val errorBody = try { response.bodyAsText() } catch(e:Exception) { "Error desconocido" }
+            val errorBody = try {
+                response.bodyAsText()
+            } catch (e: Exception) {
+                "Error desconocido"
+            }
             throw Exception("Error del servidor: ${response.status.value} - $errorBody")
         }
     }

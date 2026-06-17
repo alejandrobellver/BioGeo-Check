@@ -27,14 +27,19 @@ class DepartmentsViewModel(
     // =======================================================
 
     private val _listaDepartamentosAdmin = MutableStateFlow<List<Departamento>>(listOf())
+
     /** Catálogo global de departamentos de la empresa destinados a la vista del administrador. */
-    val listaDepartamentosAdmin: StateFlow<List<Departamento>> = _listaDepartamentosAdmin.asStateFlow()
+    val listaDepartamentosAdmin: StateFlow<List<Departamento>> =
+        _listaDepartamentosAdmin.asStateFlow()
 
     private val _conteoEmpleadosPorDepto = MutableStateFlow<Map<String, Int>>(emptyMap())
+
     /** Mapa asociativo que vincula el ID de cada departamento con el número total de trabajadores adscritos a él. */
-    val conteoEmpleadosPorDepto: StateFlow<Map<String, Int>> = _conteoEmpleadosPorDepto.asStateFlow()
+    val conteoEmpleadosPorDepto: StateFlow<Map<String, Int>> =
+        _conteoEmpleadosPorDepto.asStateFlow()
 
     private val _listaTrabajadoresAdmin = MutableStateFlow<List<Trabajador>>(listOf())
+
     /** Censo completo de trabajadores de la organización para su gestión y asignación en el panel. */
     val listaTrabajadoresAdmin: StateFlow<List<Trabajador>> = _listaTrabajadoresAdmin.asStateFlow()
 

@@ -380,7 +380,13 @@ fun UserProfileScreen(
         AlertDialog(
             onDismissRequest = { showChangePasswordDialog = false },
             containerColor = DarkGrayCard,
-            title = { Text("Seguridad: Cambiar Contraseña", color = EmeraldGreen, fontWeight = FontWeight.Bold) },
+            title = {
+                Text(
+                    "Seguridad: Cambiar Contraseña",
+                    color = EmeraldGreen,
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
@@ -403,7 +409,10 @@ fun UserProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    HorizontalDivider(color = Color(0xFF2A2A2A), modifier = Modifier.padding(vertical = 4.dp))
+                    HorizontalDivider(
+                        color = Color(0xFF2A2A2A),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
 
                     OutlinedTextField(
                         value = passNueva1,
@@ -473,7 +482,10 @@ fun UserProfileScreen(
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen, contentColor = PrimaryTextWhite)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = EmeraldGreen,
+                        contentColor = PrimaryTextWhite
+                    )
                 ) {
                     Text("Actualizar")
                 }

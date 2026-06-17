@@ -120,7 +120,11 @@ fun AuthMasterScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     when (currentTab) {
-                        0 -> LoginView(viewModel, emerald, onOlvideClick = { showForgotPasswordDialog = true })
+                        0 -> LoginView(
+                            viewModel,
+                            emerald,
+                            onOlvideClick = { showForgotPasswordDialog = true })
+
                         1 -> RegistroJefeView(viewModel, emerald, context)
                         2 -> ActivacionTrabajadorView(viewModel, emerald)
                     }
@@ -148,7 +152,8 @@ fun AuthMasterScreen(
                 is AuthViewModel.AuthState.Success -> {
                     val stateSuccess = (state as AuthViewModel.AuthState.Success)
                     val trabajador = stateSuccess.trabajador
-                    val mensaje = stateSuccess.mensajeExito ?: "✅ ¡Operación Exitosa! Por favor, verifica tu correo antes de iniciar sesión."
+                    val mensaje = stateSuccess.mensajeExito
+                        ?: "✅ ¡Operación Exitosa! Por favor, verifica tu correo antes de iniciar sesión."
                     if (trabajador != null) {
                         LaunchedEffect(Unit) {
                             onNavigateToDashboard(trabajador.rol == "JEFE")
@@ -193,7 +198,11 @@ fun AuthMasterScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (!codigoEnviado) {
-                        Text("Introduce tu correo corporativo y te enviaremos un código de seguridad de 8 dígitos.", color = Color.LightGray, fontSize = 14.sp)
+                        Text(
+                            "Introduce tu correo corporativo y te enviaremos un código de seguridad de 8 dígitos.",
+                            color = Color.LightGray,
+                            fontSize = 14.sp
+                        )
                         OutlinedTextField(
                             value = emailRecuperacion,
                             onValueChange = { emailRecuperacion = it },
@@ -208,11 +217,17 @@ fun AuthMasterScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        Text("Escribe el código recibido por correo y tus nuevas claves de acceso corporativas.", color = Color.LightGray, fontSize = 14.sp)
+                        Text(
+                            "Escribe el código recibido por correo y tus nuevas claves de acceso corporativas.",
+                            color = Color.LightGray,
+                            fontSize = 14.sp
+                        )
 
                         OutlinedTextField(
                             value = codigoOTP,
-                            onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it },
+                            onValueChange = {
+                                if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it
+                            },
                             label = { Text("Código de 8 dígitos") },
 
                             colors = OutlinedTextFieldDefaults.colors(
@@ -295,7 +310,10 @@ fun AuthMasterScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = emerald)
                 ) {
-                    Text(if (!codigoEnviado) "Enviar Código" else "Restablecer", color = Color.White)
+                    Text(
+                        if (!codigoEnviado) "Enviar Código" else "Restablecer",
+                        color = Color.White
+                    )
                 }
             },
             dismissButton = {

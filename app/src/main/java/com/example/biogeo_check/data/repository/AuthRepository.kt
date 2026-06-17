@@ -4,10 +4,10 @@ import com.example.biogeo_check.data.model.Empresa
 import com.example.biogeo_check.data.model.Invitacion
 import com.example.biogeo_check.data.model.Trabajador
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.gotrue.OtpType
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.gotrue.OtpType
 
 /**
  * Repositorio encargado de gestionar la seguridad, el control de acceso y el aprovisionamiento
@@ -157,7 +157,11 @@ class AuthRepository(private val supabase: SupabaseClient) {
             )
         } catch (e: Exception) {
             val currentUser = supabase.auth.currentUserOrNull()
-            if (currentUser != null && currentUser.email?.equals(email.trim(), ignoreCase = true) == true) {
+            if (currentUser != null && currentUser.email?.equals(
+                    email.trim(),
+                    ignoreCase = true
+                ) == true
+            ) {
                 // Si ya hay sesión para este correo, el OTP ya fue validado y consumido.
                 // Permitimos el paso para que intente cambiar la contraseña otra vez.
                 return
@@ -183,6 +187,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
             password = nuevaContrasena
         }
     }
+
     /**
      * Destruye de forma segura los tokens de acceso locales y finaliza la sesión activa del usuario actual en el servidor.
      */

@@ -19,7 +19,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     sealed class AuthState {
         object Idle : AuthState()
         object Loading : AuthState()
-        data class Success(val trabajador: Trabajador?, val mensajeExito: String? = null) : AuthState()
+        data class Success(val trabajador: Trabajador?, val mensajeExito: String? = null) :
+            AuthState()
+
         data class Error(val mensaje: String) : AuthState()
     }
 
@@ -33,7 +35,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 val trabajador = repository.login(email, contrasena)
                 _authState.value = AuthState.Success(trabajador)
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Error desconocido al iniciar sesión")
+                _authState.value =
+                    AuthState.Error(e.message ?: "Error desconocido al iniciar sesión")
             }
         }
     }
@@ -92,7 +95,13 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
             _authState.value = AuthState.Loading
             try {
                 val emailNormalizado = email.trim().lowercase()
-                repository.activarCuentaTrabajador(emailNormalizado, contrasena, nombre, apellidos, dni)
+                repository.activarCuentaTrabajador(
+                    emailNormalizado,
+                    contrasena,
+                    nombre,
+                    apellidos,
+                    dni
+                )
                 _authState.value = AuthState.Success(null)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error al activar la cuenta")
@@ -149,7 +158,10 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     /**
      * Lanza la petición de envío del código OTP de recuperación al correo indicado.
      */
-    fun enviarCorreoRecuperacion(email: String, onResultado: (exito: Boolean, mensaje: String) -> Unit) {
+    fun enviarCorreoRecuperacion(
+        email: String,
+        onResultado: (exito: Boolean, mensaje: String) -> Unit
+    ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -163,7 +175,8 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 _authState.value = AuthState.Idle
                 onResultado(true, "¡Código enviado con éxito!")
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Error al enviar el código de recuperación")
+                _authState.value =
+                    AuthState.Error(e.message ?: "Error al enviar el código de recuperación")
                 onResultado(false, e.message ?: "Error desconocido")
             }
         }
@@ -194,15 +207,19 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     repository.actualizarContrasenaOlvidada(nuevaPass1)
                 } catch (e: Exception) {
                     val msg = e.message ?: ""
-                    if (msg.contains("different from the old password", ignoreCase = true) || 
-                        msg.contains("same password", ignoreCase = true) || 
-                        msg.contains("misma contraseña", ignoreCase = true)) {
+                    if (msg.contains("different from the old password", ignoreCase = true) ||
+                        msg.contains("same password", ignoreCase = true) ||
+                        msg.contains("misma contraseña", ignoreCase = true)
+                    ) {
                         throw Exception("No puede ser tu contraseña antigua")
                     }
                     throw e
                 }
 
-                _authState.value = AuthState.Success(null, "✅ ¡Contraseña cambiada con éxito! Ya puedes iniciar sesión.")
+                _authState.value = AuthState.Success(
+                    null,
+                    "✅ ¡Contraseña cambiada con éxito! Ya puedes iniciar sesión."
+                )
                 onResultado(true, "¡Contraseña cambiada con éxito! Ya puedes iniciar sesión.")
             } catch (e: Exception) {
                 _authState.value = AuthState.Idle

@@ -270,9 +270,11 @@ fun AdminDashboardScreen(
                         val deptoName =
                             vm.listaDepartamentos.find { it.departamentoId == vm.inviteDeptoId }?.nombreDepartamento
                                 ?: "Seleccionar Departamento"
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
                             OutlinedButton(
                                 onClick = { deptoExpanded = true },
                                 modifier = Modifier.fillMaxWidth()
@@ -298,9 +300,11 @@ fun AdminDashboardScreen(
                         val contratoName =
                             vm.listaContratos.find { it.contratoId == vm.inviteContratoId }?.nombreContrato
                                 ?: "Seleccionar Contrato"
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
                             OutlinedButton(
                                 onClick = { contratoExpanded = true },
                                 modifier = Modifier.fillMaxWidth()

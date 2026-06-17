@@ -98,7 +98,10 @@ fun FichajeDashboardScreen(
                                         activity = activity,
                                         onSuccess = {
                                             // 3. Si la huella pasa, el ViewModel valida los 50 metros contra Supabase
-                                            vm.intentarFichajeConGPS(location.latitude, location.longitude)
+                                            vm.intentarFichajeConGPS(
+                                                location.latitude,
+                                                location.longitude
+                                            )
                                         },
                                         onError = { errorMsg -> vm.errorMessage = errorMsg }
                                     )

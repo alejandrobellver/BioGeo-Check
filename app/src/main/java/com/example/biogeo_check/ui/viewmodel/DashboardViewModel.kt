@@ -498,31 +498,50 @@ class DashboardViewModel(
     private fun obtenerMensajeErrorHumano(e: Exception): String {
         val msg = e.toString()
         return when {
-            msg.contains("User already registered", ignoreCase = true) || msg.contains("already exists", ignoreCase = true) ->
+            msg.contains(
+                "User already registered",
+                ignoreCase = true
+            ) || msg.contains("already exists", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado en el sistema."
 
-            msg.contains("duplicate key value", ignoreCase = true) || msg.contains("invitaciones_email_key", ignoreCase = true) ->
+            msg.contains(
+                "duplicate key value",
+                ignoreCase = true
+            ) || msg.contains("invitaciones_email_key", ignoreCase = true) ->
                 "Este correo ya ha sido invitado."
 
-            msg.contains("Network", ignoreCase = true) || msg.contains("UnknownHost", ignoreCase = true) || msg.contains("ConnectException", ignoreCase = true) ->
+            msg.contains("Network", ignoreCase = true) || msg.contains(
+                "UnknownHost",
+                ignoreCase = true
+            ) || msg.contains("ConnectException", ignoreCase = true) ->
                 "Comprueba tu conexión a internet."
 
             msg.contains("timeout", ignoreCase = true) ->
                 "La conexión ha tardado demasiado, inténtalo de nuevo."
 
-            msg.contains("invalid email", ignoreCase = true) || msg.contains("Valid email", ignoreCase = true) ->
+            msg.contains("invalid email", ignoreCase = true) || msg.contains(
+                "Valid email",
+                ignoreCase = true
+            ) ->
                 "El formato del correo no es válido."
 
             msg.contains("not found", ignoreCase = true) ->
                 "No se ha encontrado la información."
 
-            msg.contains("500", ignoreCase = true) || msg.contains("400", ignoreCase = true) || msg.contains("ServerResponseException", ignoreCase = true) || msg.contains("RestException", ignoreCase = true) ->
+            msg.contains("500", ignoreCase = true) || msg.contains(
+                "400",
+                ignoreCase = true
+            ) || msg.contains(
+                "ServerResponseException",
+                ignoreCase = true
+            ) || msg.contains("RestException", ignoreCase = true) ->
                 "Este correo ya está registrado o invitado."
 
             else ->
                 "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
         }
     }
+
     /**
      * Valida la posición del GPS recibida desde la vista contra las coordenadas
      * de la empresa registradas en Supabase antes de permitir el marcaje.
@@ -544,7 +563,8 @@ class DashboardViewModel(
 
                 // Control preventivo por si el jefe no rellenó bien la calle o falló el Geocoder al crearla
                 if (latOficina == null || lonOficina == null) {
-                    errorMessage = "Error corporativo: Tu empresa no tiene coordenadas de geovalla configuradas."
+                    errorMessage =
+                        "Error corporativo: Tu empresa no tiene coordenadas de geovalla configuradas."
                     return@launch
                 }
 
@@ -563,7 +583,8 @@ class DashboardViewModel(
 
                     alternarFichaje()
                 } else {
-                    errorMessage = "Estás a ${distanciaMetros.toInt()}m de la oficina. Debes estar a menos de 50m para poder fichar."
+                    errorMessage =
+                        "Estás a ${distanciaMetros.toInt()}m de la oficina. Debes estar a menos de 200m para poder fichar."
 
                     launch {
                         kotlinx.coroutines.delay(5000)
