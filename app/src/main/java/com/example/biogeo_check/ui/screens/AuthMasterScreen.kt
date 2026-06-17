@@ -129,6 +129,7 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // CONTROL DE ESTADOS DE AUTENTICACIÓN
             when (state) {
                 is AuthViewModel.AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))
@@ -195,7 +196,12 @@ fun AuthMasterScreen(
                             value = emailRecuperacion,
                             onValueChange = { emailRecuperacion = it },
                             label = { Text("Email registrado") },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -206,7 +212,13 @@ fun AuthMasterScreen(
                             value = codigoOTP,
                             onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it },
                             label = { Text("Código de 8 dígitos") },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -215,7 +227,12 @@ fun AuthMasterScreen(
                             onValueChange = { pass1 = it },
                             label = { Text("Nueva Contraseña") },
                             visualTransformation = PasswordVisualTransformation(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -224,7 +241,12 @@ fun AuthMasterScreen(
                             onValueChange = { pass2 = it },
                             label = { Text("Repetir Nueva Contraseña") },
                             visualTransformation = PasswordVisualTransformation(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )

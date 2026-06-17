@@ -32,20 +32,20 @@
 | # | Tarea | Estado |
 |---|-------|--------|
 | 4.1 | Crear `AuthRepository` para gestionar signUp, signIn y logout | ✅ **Hecho** |
-| 4.2 | Crear pantalla de Registro de Empresa (Rol: Jefe) | ⬜ Pendiente |
-| 4.3 | Crear pantalla de Activación de Trabajador | ⬜ Pendiente |
-| 4.4 | Crear pantalla de Login (Día a día) y validaciones | ⬜ Pendiente |
-| 4.5 | Implementar redirección de UI según el Rol (`JEFE` / `TRABAJADOR`) | ⬜ Pendiente |
+| 4.2 | Crear pantalla de Registro de Empresa (Rol: Jefe) | ✅ **Hecho** |
+| 4.3 | Crear pantalla de Activación de Trabajador | ✅ **Hecho** |
+| 4.4 | Crear pantalla de Login (Día a día) y validaciones | ✅ **Hecho** |
+| 4.5 | Implementar redirección de UI según el Rol (`JEFE` / `TRABAJADOR`) | ✅ **Hecho** |
 
 ## 5. ⏱️ Sistema de Fichaje (UI y Lógica)
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 5.1 | Crear `FichajesRepository` para operaciones CRUD | ⬜ Pendiente |
-| 5.2 | Diseñar pantalla principal de fichaje (Botones Entrada/Salida) | ⬜ Pendiente |
-| 5.3 | Implementar ViewModel para controlar el estado del botón | ⬜ Pendiente |
-| 5.4 | Cronómetro en tiempo real (Corrutinas en ViewModel) | ⬜ Pendiente |
-| 5.5 | Insertar filas en la tabla `fichaje` al pulsar el botón | ⬜ Pendiente |
+| 5.1 | Crear `FichajesRepository` para operaciones CRUD | ✅ **Hecho** |
+| 5.2 | Diseñar pantalla principal de fichaje (Botones Entrada/Salida) | ✅ **Hecho** |
+| 5.3 | Implementar ViewModel para controlar el estado del botón | ✅ **Hecho** |
+| 5.4 | Cronómetro en tiempo real (Corrutinas en ViewModel) | ✅ **Hecho** |
+| 5.5 | Insertar filas en la tabla `fichaje` al pulsar el botón | ✅ **Hecho** |
 
 ## 6. 📍 Geolocalización y Mapas
 
@@ -59,24 +59,23 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 7.1 | Añadir dependencia y permisos de Biometría | ⬜ Pendiente |
-| 7.2 | Interceptar el clic de fichaje con el prompt de huella | ⬜ Pendiente |
+| 7.1 | Añadir dependencia y permisos de Biometría | ✅ **Hecho** |
+| 7.2 | Interceptar el clic de fichaje con el prompt de huella | ✅ **Hecho** |
 
 ## 8. 👥 Panel Admin y Listados
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 8.1 | Diseñar UI del Panel del Jefe (Listado de trabajadores) | ⬜ Pendiente |
-| 8.2 | Historial de fichajes con RecyclerView/LazyColumn | ⬜ Pendiente |
-| 8.3 | Pantalla de creación y gestión de incidencias | ⬜ Pendiente |
+| 8.1 | Diseñar UI del Panel del Jefe (Listado de trabajadores) | ✅ **Hecho** |
+| 8.2 | Historial de fichajes con RecyclerView/LazyColumn | ✅ **Hecho** |
 
 ## 9. 🧹 Pulido y Entrega
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 9.1 | Refactorizar código y aplicar estilos unificados (Material3) | ⬜ Pendiente |
-| 9.2 | Probar flujo completo (Login -> Fichaje Biométrico -> BD) | ⬜ Pendiente |
-| 9.3 | Documentar código para memoria del TFG | ⬜ Pendiente |
+| 9.1 | Refactorizar código y aplicar estilos unificados (Material3) | ✅ **Hecho** |
+| 9.2 | Probar flujo completo (Login -> Fichaje Biométrico -> BD) | ✅ **Hecho** |
+| 9.3 | Documentar código para memoria del TFG | ✅ **Hecho** |
 | 9.4 | Generar y firmar el archivo APK definitivo | ⬜ Pendiente |
 
 ---
@@ -88,13 +87,13 @@
 | Configuración Inicial | 5 | **5** | 0 |
 | Supabase Backend | 4 | **4** | 0 |
 | Conexión de Red | 3 | **3** | 0 |
-| Repositorios / Auth | 5 | **1** | 4 |
-| Sistema de Fichaje | 5 | **0** | 5 |
+| Repositorios / Auth | 5 | **5** | 0 |
+| Sistema de Fichaje | 5 | **5** | 0 |
 | Geolocalización | 3 | **0** | 3 |
-| Biometría | 2 | **0** | 2 |
-| Panel Admin | 3 | **0** | 3 |
-| Pulido Final | 4 | **0** | 4 |
-| **TOTAL** | **34** | **13** | **21** |
+| Biometría | 2 | **2** | 0 |
+| Panel Admin | 2 | **2** | 0 |
+| Pulido Final | 4 | **3** | 1 |
+| **TOTAL** | **33** | **29** | **4** |
 
 > [!NOTE]
-> **Progreso: ~38%** — Estructura base y capa de datos de autenticación completadas. Siguiente fase: Desarrollo de la UI y ViewModel para el control de accesos.
+> **Progreso: ~88%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
