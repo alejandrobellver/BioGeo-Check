@@ -15,6 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import com.example.biogeo_check.data.network.SupabaseClient
 import com.example.biogeo_check.data.repository.AuthRepository
 import com.example.biogeo_check.data.repository.FichajeRepository
@@ -85,6 +87,9 @@ fun AppNavigation(
     departmentsViewModel: DepartmentsViewModel
 ) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val sharedPrefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    val termsAccepted = sharedPrefs.getBoolean("terms_accepted", false)
 
     LaunchedEffect(Unit) {
         if (dashboardViewModel.trabajadorActual == null) {
@@ -92,10 +97,13 @@ fun AppNavigation(
         }
     }
 
-    NavHost(navController = navController, startDestination = "legal") {
+    val startDest = if (termsAccepted) "auth" else "legal"
+
+    NavHost(navController = navController, startDestination = startDest) {
         composable("legal") {
             LegalScreen(
                 onAccept = {
+                    sharedPrefs.edit().putBoolean("terms_accepted", true).apply()
                     navController.navigate("auth") {
                         popUpTo("legal") { inclusive = true }
                     }
