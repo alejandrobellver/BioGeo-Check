@@ -146,7 +146,9 @@ fun AuthMasterScreen(
                 }
 
                 is AuthViewModel.AuthState.Success -> {
-                    val trabajador = (state as AuthViewModel.AuthState.Success).trabajador
+                    val stateSuccess = (state as AuthViewModel.AuthState.Success)
+                    val trabajador = stateSuccess.trabajador
+                    val mensaje = stateSuccess.mensajeExito ?: "✅ ¡Operación Exitosa! Por favor, verifica tu correo antes de iniciar sesión."
                     if (trabajador != null) {
                         LaunchedEffect(Unit) {
                             onNavigateToDashboard(trabajador.rol == "JEFE")
@@ -154,7 +156,7 @@ fun AuthMasterScreen(
                         }
                     } else {
                         Text(
-                            text = "✅ ¡Operación Exitosa! Por favor, inicia sesión.",
+                            text = mensaje,
                             color = emerald,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(20.dp)
