@@ -141,6 +141,7 @@ class DashboardViewModel(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                errorMessage = e.message
             }
         }
     }
