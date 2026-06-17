@@ -53,7 +53,6 @@
 |---|-------|--------|
 | 6.1 | Configurar permisos de ubicación (`ACCESS_FINE_LOCATION`) | ⬜ Pendiente |
 | 6.2 | Capturar lat/lon exacta (One-Shot Location) al fichar | ⬜ Pendiente |
-| 6.3 | Añadir botón Intent para "Cómo llegar" (Google Maps nativo) | ⬜ Pendiente |
 
 ## 7. 🔒 Autenticación Biométrica
 
@@ -89,11 +88,11 @@
 | Conexión de Red | 3 | **3** | 0 |
 | Repositorios / Auth | 5 | **5** | 0 |
 | Sistema de Fichaje | 5 | **5** | 0 |
-| Geolocalización | 3 | **0** | 3 |
+| Geolocalización | 2 | **0** | 2 |
 | Biometría | 2 | **2** | 0 |
 | Panel Admin | 2 | **2** | 0 |
 | Pulido Final | 4 | **3** | 1 |
-| **TOTAL** | **33** | **29** | **4** |
+| **TOTAL** | **32** | **29** | **3** |
 
 > [!NOTE]
-> **Progreso: ~88%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
+> **Progreso: ~91%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
