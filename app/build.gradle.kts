@@ -80,6 +80,13 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+    
+    // Android UI Testing
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     implementation(libs.material.v1120)
