@@ -51,8 +51,8 @@
 
 | # | Tarea | Estado |
 |---|-------|--------|
-| 6.1 | Configurar permisos de ubicación (`ACCESS_FINE_LOCATION`) | ⬜ Pendiente |
-| 6.2 | Capturar lat/lon exacta (One-Shot Location) al fichar | ⬜ Pendiente |
+| 6.1 | Configurar permisos de ubicación (`ACCESS_FINE_LOCATION`) | ✅ **Hecho** |
+| 6.2 | Capturar lat/lon exacta (One-Shot Location) al fichar | ✅ **Hecho** |
 
 ## 7. 🔒 Autenticación Biométrica
 
@@ -88,11 +88,11 @@
 | Conexión de Red | 3 | **3** | 0 |
 | Repositorios / Auth | 5 | **5** | 0 |
 | Sistema de Fichaje | 5 | **5** | 0 |
-| Geolocalización | 2 | **0** | 2 |
+| Geolocalización | 2 | **2** | 0 |
 | Biometría | 2 | **2** | 0 |
 | Panel Admin | 2 | **2** | 0 |
 | Pulido Final | 4 | **3** | 1 |
-| **TOTAL** | **32** | **29** | **3** |
+| **TOTAL** | **32** | **31** | **1** |
 
 > [!NOTE]
-> **Progreso: ~91%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
+> **Progreso: ~97%** — Gran parte del desarrollo lógico y de UI está finalizado. Quedan detalles como geolocalización y pruebas finales antes del APK.
