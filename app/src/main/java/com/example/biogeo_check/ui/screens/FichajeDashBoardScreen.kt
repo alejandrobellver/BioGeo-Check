@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import com.example.biogeo_check.ui.theme.EmeraldGreen
 import com.example.biogeo_check.ui.theme.PrimaryTextWhite
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 import com.example.biogeo_check.util.BiometricHelper
+import com.example.biogeo_check.util.LocationHelper // 🚀 Importación de tu nueva utilidad añadida
 
 @Composable
 fun FichajeDashboardScreen(
@@ -44,6 +46,7 @@ fun FichajeDashboardScreen(
     val trabajador = vm.trabajadorActual
     val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
     val activity = LocalActivity.current as? FragmentActivity
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         vm.cargarDatosIniciales()
@@ -62,7 +65,6 @@ fun FichajeDashboardScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-
             Text(
                 text = "Bienvenido/a, ${trabajador?.nombre ?: "Usuario"}",
                 color = PrimaryTextWhite,
@@ -80,7 +82,6 @@ fun FichajeDashboardScreen(
                 )
             }
 
-
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -88,17 +89,24 @@ fun FichajeDashboardScreen(
                 Button(
                     onClick = {
                         if (activity != null) {
-                            BiometricHelper.authenticate(
-                                activity = activity,
-                                onSuccess = {
-                                    vm.alternarFichaje()
+                            // 1. Llamamos a nuestra utilidad del GPS encapsulada y limpia
+                            LocationHelper.obtenerUbicacionActual(
+                                context = context,
+                                onSuccess = { location ->
+                                    // 2. Si el GPS responde bien, lanzamos la biometría
+                                    BiometricHelper.authenticate(
+                                        activity = activity,
+                                        onSuccess = {
+                                            // 3. Si la huella pasa, el ViewModel valida los 50 metros contra Supabase
+                                            vm.intentarFichajeConGPS(location.latitude, location.longitude)
+                                        },
+                                        onError = { errorMsg -> vm.errorMessage = errorMsg }
+                                    )
                                 },
-                                onError = { errorMsg ->
-                                    vm.errorMessage = errorMsg
-                                }
+                                onError = { errorMsg -> vm.errorMessage = errorMsg }
                             )
                         } else {
-                            vm.errorMessage = "Error: La actividad no es compatible con biometría."
+                            vm.errorMessage = "Error: Actividad no compatible."
                         }
                     },
                     modifier = Modifier
@@ -134,7 +142,6 @@ fun FichajeDashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
             // TARJETA 2
             DashboardCard(
                 title = "Hora de Salida",
@@ -142,7 +149,6 @@ fun FichajeDashboardScreen(
             )
 
             if (isClockedIn) {
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 DashboardCard(
@@ -151,8 +157,6 @@ fun FichajeDashboardScreen(
                 )
             }
         }
-
-
 
         BottomNavBar(
             currentScreen = NavScreen.HOME,

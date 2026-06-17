@@ -1,6 +1,7 @@
 package com.example.biogeo_check.data.repository
 
 import com.example.biogeo_check.data.model.Departamento
+import com.example.biogeo_check.data.model.Empresa
 import com.example.biogeo_check.data.model.Fichaje
 import com.example.biogeo_check.data.model.TipoContrato
 import com.example.biogeo_check.data.model.Trabajador
@@ -13,12 +14,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.client.statement.bodyAsText
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
 class FichajeRepository(private val supabase: SupabaseClient) {
 
@@ -280,5 +275,14 @@ class FichajeRepository(private val supabase: SupabaseClient) {
                 order(column = "hora_fichaje", order = Order.ASCENDING)
             }
             .decodeList<Fichaje>()
+    }
+
+    /**
+     * Recupera los datos de una empresa de Supabase por su ID único.
+     */
+    suspend fun obtenerEmpresaPorId(empresaId: String): Empresa {
+        return supabase.postgrest["empresa"]
+            .select { filter { eq("id", empresaId) } }
+            .decodeSingle<Empresa>()
     }
 }

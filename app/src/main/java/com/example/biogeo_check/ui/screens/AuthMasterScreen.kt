@@ -1,5 +1,6 @@
 package com.example.biogeo_check.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,12 +29,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -47,7 +50,7 @@ fun AuthMasterScreen(
     onNavigateToDashboard: (isJefe: Boolean) -> Unit = {}
 ) {
     val state by viewModel.authState.collectAsState()
-    var currentTab by remember { mutableStateOf(0) }
+    var currentTab by remember { mutableIntStateOf(0) }
 
     val emerald = Color(0xFF10B981)
     val background = Color(0xFF121212)
@@ -55,6 +58,7 @@ fun AuthMasterScreen(
 
     val mainScrollState = rememberScrollState()
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -79,7 +83,6 @@ fun AuthMasterScreen(
                 modifier = Modifier.padding(top = 40.dp, bottom = 24.dp)
             )
 
-            // SELECTOR DE PANTALLAS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -111,16 +114,14 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // RENDERIZADO DE LOS FORMULARIOS
             Card(
                 colors = CardDefaults.cardColors(containerColor = surface),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     when (currentTab) {
-                        // 🚀 PASAMOS LA LAMBDA: Al hacer clic, cambia el estado para abrir el Popup
                         0 -> LoginView(viewModel, emerald, onOlvideClick = { showForgotPasswordDialog = true })
-                        1 -> RegistroJefeView(viewModel, emerald)
+                        1 -> RegistroJefeView(viewModel, emerald, context)
                         2 -> ActivacionTrabajadorView(viewModel, emerald)
                     }
                 }
@@ -128,7 +129,6 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // CONTROL DE ESTADOS DE AUTENTICACIÓN
             when (state) {
                 is AuthViewModel.AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))
@@ -166,9 +166,6 @@ fun AuthMasterScreen(
         }
     }
 
-    // =============================================================================================
-    // 🚀 POPUP DE RECUPERACIÓN DE CONTRASEÑA EN 2 FASES (OTP NATIVO v2.5.0)
-    // =============================================================================================
     if (showForgotPasswordDialog) {
         var emailRecuperacion by remember { mutableStateOf("") }
         var codigoOTP by remember { mutableStateOf("") }
@@ -209,7 +206,6 @@ fun AuthMasterScreen(
                             value = codigoOTP,
                             onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it },
                             label = { Text("Código de 8 dígitos") },
-
                             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
@@ -318,7 +314,6 @@ fun LoginView(vm: AuthViewModel, color: Color, onOlvideClick: () -> Unit) {
             singleLine = true
         )
 
-        // 🚀 NUEVO: Texto clickable que abre el popup de recuperación
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "¿Has olvidado tu contraseña?",
@@ -342,7 +337,7 @@ fun LoginView(vm: AuthViewModel, color: Color, onOlvideClick: () -> Unit) {
 }
 
 @Composable
-fun RegistroJefeView(vm: AuthViewModel, color: Color) {
+fun RegistroJefeView(vm: AuthViewModel, color: Color, context: Context) {
     var nombreEmpresa by remember { mutableStateOf("") }
     var cif by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
@@ -464,16 +459,17 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color) {
         Button(
             onClick = {
                 vm.registrarJefeYEmpresa(
-                    email,
-                    pass,
-                    nombreEmpresa,
-                    cif,
-                    direccion,
-                    cp = cp.toInt(),
-                    ciudad,
-                    nombreJefe,
-                    apellidosJefe,
-                    dniJefe
+                    context = context,
+                    email = email,
+                    contrasena = pass,
+                    nombreEmpresa = nombreEmpresa,
+                    cif = cif,
+                    direccion = direccion,
+                    cp = cp.toIntOrNull() ?: 0,
+                    ciudad = ciudad,
+                    nombreJefe = nombreJefe,
+                    apellidosJefe = apellidosJefe,
+                    dniJefe = dniJefe
                 )
             },
             modifier = Modifier.fillMaxWidth(),

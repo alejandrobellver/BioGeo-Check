@@ -86,15 +86,15 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
 
     // Forzamos las versiones a mano para que no haya dudas con el BOM
-    val supabase_version = "2.5.0"
+    val supabaseVersion = "2.5.0"
 
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:$supabase_version")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:$supabaseVersion")
 
     // PRUEBA ESTE CAMBIO: Algunas versiones usan 'gotrue-kt' en lugar de 'auth-kt'
     // aunque el paquete se llame auth internamente.
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:$supabase_version")
-    implementation("io.github.jan-tennert.supabase:realtime-kt:$supabase_version")
-    implementation("io.github.jan-tennert.supabase:functions-kt:$supabase_version")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:$supabaseVersion")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:$supabaseVersion")
+    implementation("io.github.jan-tennert.supabase:functions-kt:$supabaseVersion")
 
     // Serialización y Ktor
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
@@ -114,5 +114,8 @@ dependencies {
     // Optional but recommended for integration
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    // Dependencia para el manejo de permisos
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 }
 

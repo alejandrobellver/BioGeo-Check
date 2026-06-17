@@ -1,5 +1,6 @@
 package com.example.biogeo_check.ui.viewmodel
 
+import android.location.Location
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -520,6 +521,59 @@ class DashboardViewModel(
 
             else ->
                 "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
+        }
+    }
+    /**
+     * Valida la posición del GPS recibida desde la vista contra las coordenadas
+     * de la empresa registradas en Supabase antes de permitir el marcaje.
+     */
+    fun intentarFichajeConGPS(latCelular: Double, lonCelular: Double) {
+        val trabajador = trabajadorActual
+        if (trabajador == null) {
+            errorMessage = "Error: No se ha cargado el perfil del trabajador en el sistema."
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                // 1. Descargamos dinámicamente los datos de la empresa de este trabajador desde Supabase
+                val datosEmpresa = fichajeRepository.obtenerEmpresaPorId(trabajador.empresaId)
+
+                val latOficina = datosEmpresa.latitud
+                val lonOficina = datosEmpresa.longitud
+
+                // Control preventivo por si el jefe no rellenó bien la calle o falló el Geocoder al crearla
+                if (latOficina == null || lonOficina == null) {
+                    errorMessage = "Error corporativo: Tu empresa no tiene coordenadas de geovalla configuradas."
+                    return@launch
+                }
+
+                // 2. Medimos la distancia real en metros usando la curvatura de la Tierra
+                val resultadoDistancia = FloatArray(1)
+                Location.distanceBetween(
+                    latCelular, lonCelular,
+                    latOficina, lonOficina,
+                    resultadoDistancia
+                )
+
+                val distanciaMetros = resultadoDistancia[0]
+
+                if (distanciaMetros <= 200f) {
+                    errorMessage = null
+
+                    alternarFichaje()
+                } else {
+                    errorMessage = "Estás a ${distanciaMetros.toInt()}m de la oficina. Debes estar a menos de 50m para poder fichar."
+
+                    launch {
+                        kotlinx.coroutines.delay(5000)
+                        errorMessage = null
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                errorMessage = "Error de red al comprobar la geolocalización de la empresa."
+            }
         }
     }
 }

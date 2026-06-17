@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.data.repository.AuthRepository
+import com.example.biogeo_check.util.LocationHelper.obtenerCoordenadasDesdeDireccion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     }
 
     fun registrarJefeYEmpresa(
+        context: android.content.Context,
         email: String,
         contrasena: String,
         nombreEmpresa: String,
@@ -51,7 +53,13 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     ) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+
             try {
+                val direccionCompleta = "$direccion, $cp, $ciudad, España"
+
+                val coordenadas = obtenerCoordenadasDesdeDireccion(context, direccionCompleta)
+
+                // 2. Pasar los datos calculados al repositorio de Supabase
                 repository.registrarJefeYEmpresa(
                     email = email,
                     contrasena = contrasena,
@@ -62,7 +70,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                     ciudad = ciudad,
                     nombreJefe = nombreJefe,
                     apellidosJefe = apellidosJefe,
-                    dniJefe = dniJefe
+                    dniJefe = dniJefe,
+                    latitudCalculada = coordenadas?.first,
+                    longitudCalculada = coordenadas?.second
                 )
                 _authState.value = AuthState.Success(null)
             } catch (e: Exception) {
