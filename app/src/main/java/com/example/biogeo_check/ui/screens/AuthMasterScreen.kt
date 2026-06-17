@@ -145,7 +145,9 @@ fun AuthMasterScreen(
                 }
 
                 is AuthViewModel.AuthState.Success -> {
-                    val trabajador = (state as AuthViewModel.AuthState.Success).trabajador
+                    val stateSuccess = (state as AuthViewModel.AuthState.Success)
+                    val trabajador = stateSuccess.trabajador
+                    val mensaje = stateSuccess.mensajeExito ?: "✅ ¡Operación Exitosa! Por favor, verifica tu correo antes de iniciar sesión."
                     if (trabajador != null) {
                         LaunchedEffect(Unit) {
                             onNavigateToDashboard(trabajador.rol == "JEFE")
@@ -153,7 +155,7 @@ fun AuthMasterScreen(
                         }
                     } else {
                         Text(
-                            text = "✅ ¡Operación Exitosa! Por favor, inicia sesión.",
+                            text = mensaje,
                             color = emerald,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(20.dp)
@@ -198,7 +200,12 @@ fun AuthMasterScreen(
                             value = emailRecuperacion,
                             onValueChange = { emailRecuperacion = it },
                             label = { Text("Email registrado") },
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -210,7 +217,12 @@ fun AuthMasterScreen(
                             onValueChange = { if (it.length <= 8 && it.all { c -> c.isDigit() }) codigoOTP = it },
                             label = { Text("Código de 8 dígitos") },
 
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -219,7 +231,12 @@ fun AuthMasterScreen(
                             onValueChange = { pass1 = it },
                             label = { Text("Nueva Contraseña") },
                             visualTransformation = PasswordVisualTransformation(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -228,7 +245,12 @@ fun AuthMasterScreen(
                             onValueChange = { pass2 = it },
                             label = { Text("Repetir Nueva Contraseña") },
                             visualTransformation = PasswordVisualTransformation(),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = emerald, focusedLabelColor = emerald),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = emerald,
+                                focusedLabelColor = emerald,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )

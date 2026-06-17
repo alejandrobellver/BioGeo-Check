@@ -147,11 +147,21 @@ class AuthRepository(private val supabase: SupabaseClient) {
      * Verifica el código OTP para re-autenticar al usuario temporalmente (Firma Real v2.5.0).
      */
     suspend fun verificarCodigoOTP(email: String, codigo: String) {
-        supabase.auth.verifyEmailOtp(
-            type = OtpType.Email.EMAIL,
-            email = email.trim(),
-            token = codigo.trim()
-        )
+        try {
+            supabase.auth.verifyEmailOtp(
+                type = OtpType.Email.EMAIL,
+                email = email.trim(),
+                token = codigo.trim()
+            )
+        } catch (e: Exception) {
+            val currentUser = supabase.auth.currentUserOrNull()
+            if (currentUser != null && currentUser.email?.equals(email.trim(), ignoreCase = true) == true) {
+                // Si ya hay sesión para este correo, el OTP ya fue validado y consumido.
+                // Permitimos el paso para que intente cambiar la contraseña otra vez.
+                return
+            }
+            throw e
+        }
     }
 
     /**

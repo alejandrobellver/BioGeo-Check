@@ -18,7 +18,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     sealed class AuthState {
         object Idle : AuthState()
         object Loading : AuthState()
-        data class Success(val trabajador: Trabajador?) : AuthState()
+        data class Success(val trabajador: Trabajador?, val mensajeExito: String? = null) : AuthState()
         data class Error(val mensaje: String) : AuthState()
     }
 
@@ -180,12 +180,22 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 }
 
                 repository.verificarCodigoOTP(email, codigo)
-                repository.actualizarContrasenaOlvidada(nuevaPass1)
+                try {
+                    repository.actualizarContrasenaOlvidada(nuevaPass1)
+                } catch (e: Exception) {
+                    val msg = e.message ?: ""
+                    if (msg.contains("different from the old password", ignoreCase = true) || 
+                        msg.contains("same password", ignoreCase = true) || 
+                        msg.contains("misma contraseña", ignoreCase = true)) {
+                        throw Exception("No puede ser tu contraseña antigua")
+                    }
+                    throw e
+                }
 
-                _authState.value = AuthState.Success(null)
+                _authState.value = AuthState.Success(null, "✅ ¡Contraseña cambiada con éxito! Ya puedes iniciar sesión.")
                 onResultado(true, "¡Contraseña cambiada con éxito! Ya puedes iniciar sesión.")
             } catch (e: Exception) {
-                _authState.value = AuthState.Error(e.message ?: "Código incorrecto o expirado")
+                _authState.value = AuthState.Idle
                 onResultado(false, e.message ?: "Error en la verificación")
             }
         }
