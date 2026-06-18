@@ -378,7 +378,10 @@ fun UserProfileScreen(
         var esErrorFeedback by remember { mutableStateOf(false) }
 
         AlertDialog(
-            onDismissRequest = { showChangePasswordDialog = false },
+            onDismissRequest = {
+                showChangePasswordDialog = false
+                mensajeFeedback = ""
+            },
             containerColor = DarkGrayCard,
             title = {
                 Text(

@@ -129,7 +129,7 @@ fun AppNavigation(
                 onNavigate = { screen ->
                     val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+                        NavScreen.HOME -> {}
 
                         // Nuevos botones para jefes
                         NavScreen.EMPLOYEES -> {
@@ -156,7 +156,9 @@ fun AppNavigation(
                 onNavigate = { screen ->
                     val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard") {
+                            popUpTo("fichaje_dashboard") { inclusive = true }
+                        }
                         NavScreen.EMPLOYEES -> { /* Ya estamos aquí */
                         }
 
@@ -176,7 +178,9 @@ fun AppNavigation(
                 isJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE",
                 onNavigate = { screen ->
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard") {
+                            popUpTo("fichaje_dashboard") { inclusive = true }
+                        }
 
                         NavScreen.EMPLOYEES -> {
                             val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
@@ -199,7 +203,9 @@ fun AppNavigation(
                 onNavigate = { screen ->
                     val esJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE"
                     when (screen) {
-                        NavScreen.HOME -> navController.navigate("fichaje_dashboard")
+                        NavScreen.HOME -> navController.navigate("fichaje_dashboard") {
+                            popUpTo("fichaje_dashboard") { inclusive = true }
+                        }
 
                         NavScreen.EMPLOYEES -> {
                             if (esJefe) {
