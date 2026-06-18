@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       } })
     }
 
-    const { email, empresa_id, departamento_id, contrato_id } = await req.json()
+    const { email, empresa_id, departamento_id, contrato_id, rol } = await req.json()
 
     if (!email || !empresa_id) {
       return new Response(JSON.stringify({ error: "Faltan datos obligatorios (email, empresa_id)" }), { 
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       empresa_id: empresa_id,
       departamento_id: departamento_id,
       contrato_id: contrato_id,
-      rol: 'TRABAJADOR'
+      rol: rol || 'TRABAJADOR'
     })
 
     if (dbError) {
