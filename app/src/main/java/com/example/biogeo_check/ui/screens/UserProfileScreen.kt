@@ -444,7 +444,6 @@ fun UserProfileScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Notificaciones internas de éxito/error dinámicas
                     if (mensajeFeedback.isNotBlank()) {
                         Text(
                             text = mensajeFeedback,
@@ -467,7 +466,6 @@ fun UserProfileScreen(
                             return@Button
                         }
 
-                        // Dispara el validador seguro del AuthViewModel
                         authViewModel.cambiarContrasenaSegura(
                             emailActual = emailUsuario,
                             contrasenaVieja = passVieja.trim(),
@@ -477,7 +475,6 @@ fun UserProfileScreen(
                             mensajeFeedback = mensaje
                             esErrorFeedback = !exito
                             if (exito) {
-                                // Limpieza preventiva si la operación fue exitosa
                                 passVieja = ""
                                 passNueva1 = ""
                                 passNueva2 = ""

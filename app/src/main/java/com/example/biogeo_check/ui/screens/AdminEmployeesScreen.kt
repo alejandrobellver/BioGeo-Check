@@ -91,7 +91,6 @@ fun AdminDashboardScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Top Row Metrics
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -143,7 +142,6 @@ fun AdminDashboardScreen(
                 }
             }
 
-            // Employee List
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,7 +211,6 @@ fun AdminDashboardScreen(
             onNavigate = onNavigate
         )
 
-        // Success Dialog
         vm.inviteSuccessMessage?.let { msg ->
             AlertDialog(
                 onDismissRequest = { vm.inviteSuccessMessage = null },
@@ -231,7 +228,6 @@ fun AdminDashboardScreen(
             )
         }
 
-        // Invite Dialog
         if (vm.showInviteDialog) {
             AlertDialog(
                 onDismissRequest = {

@@ -139,7 +139,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
             ?: throw Exception("No se encontró el perfil de este trabajador en la empresa.")
     }
 
-/// =============================================================================================
+    // =============================================================================================
     // RECUPERACIÓN NATIVA OTP Y SEGURIDAD
     // =============================================================================================
 

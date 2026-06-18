@@ -136,7 +136,6 @@ fun AdminDepartmentsScreen(
         )
     }
 
-    // Diálogo de creación conectado al ViewModel
     if (showCreateDialog) {
         CreateDepartmentDialog(
             onDismiss = { showCreateDialog = false },
@@ -148,12 +147,11 @@ fun AdminDepartmentsScreen(
         )
     }
 
-    // Diálogo de asignación conectado al ViewModel
     if (selectedDepartment != null) {
         AssignEmployeesDialog(
             departamento = selectedDepartment!!,
-            allEmployees = listaTrabajadores, // 🚀 Pasamos la lista limpia desenvuelta
-            allDepartments = listaDepartamentos, // 🚀 Pasamos la lista limpia desenvuelta
+            allEmployees = listaTrabajadores,
+            allDepartments = listaDepartamentos,
             onDismiss = { selectedDepartment = null },
             onConfirmAssignments = { listaIds ->
                 vm.actualizarEmpleadosDepartamento(selectedDepartment!!.departamentoId, listaIds)

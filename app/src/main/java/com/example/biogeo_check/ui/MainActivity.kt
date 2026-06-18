@@ -131,7 +131,6 @@ fun AppNavigation(
                     when (screen) {
                         NavScreen.HOME -> {}
 
-                        // Nuevos botones para jefes
                         NavScreen.EMPLOYEES -> {
                             if (esJefe) {
                                 navController.navigate("admin_employees")
