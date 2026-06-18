@@ -146,34 +146,66 @@ class DashboardViewModel(
         }
     }
 
-    /**
-     * Evalúa el estado del último fichaje y realiza una proyección de la jornada diaria del trabajador.
-     * * Determina las horas obligatorias en función del contrato asignado y actualiza las propiedades
-     * estéticas [horaFichajeTexto] y [horaSiguienteEventoTexto] para guiar al usuario.
-     */
     private fun calcularTiempoTrabajadoHoy() {
         val trabajador = trabajadorActual ?: return
-
-        val cal = java.util.Calendar.getInstance()
-        val horaActual = cal.get(java.util.Calendar.HOUR_OF_DAY)
-        val minutoActual = cal.get(java.util.Calendar.MINUTE)
 
         val horasSemanalesCelda = tipoContrato?.horasSemanales ?: 40
         val horasJornadaDiaria = horasSemanalesCelda / 5
 
-        val horaEntradaTexto =
-            String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+        val sdfLocal = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+        sdfLocal.timeZone = java.util.TimeZone.getDefault()
 
-        val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
-        val horaSalidaTexto = String.format(
-            java.util.Locale.getDefault(),
-            "%02d:%02d",
-            horaSalidaCalculada,
-            minutoActual
+        if (ultimoFichaje?.horaFichaje != null) {
+            val parsed = parseSupabaseDate(ultimoFichaje!!.horaFichaje!!)
+            if (parsed != null) {
+                horaFichajeTexto = sdfLocal.format(parsed)
+            } else {
+                val cal = java.util.Calendar.getInstance()
+                horaFichajeTexto = String.format(
+                    java.util.Locale.getDefault(), "%02d:%02d",
+                    cal.get(java.util.Calendar.HOUR_OF_DAY),
+                    cal.get(java.util.Calendar.MINUTE)
+                )
+            }
+        } else {
+            val cal = java.util.Calendar.getInstance()
+            horaFichajeTexto = String.format(
+                java.util.Locale.getDefault(), "%02d:%02d",
+                cal.get(java.util.Calendar.HOUR_OF_DAY),
+                cal.get(java.util.Calendar.MINUTE)
+            )
+        }
+
+        val calSalida = java.util.Calendar.getInstance()
+        val hActual = calSalida.get(java.util.Calendar.HOUR_OF_DAY)
+        val mActual = calSalida.get(java.util.Calendar.MINUTE)
+        val hSalidaCalc = (hActual + horasJornadaDiaria.toInt()) % 24
+        horaSiguienteEventoTexto = String.format(
+            java.util.Locale.getDefault(), "%02d:%02d", hSalidaCalc, mActual
         )
+    }
 
-        horaFichajeTexto = horaEntradaTexto
-        horaSiguienteEventoTexto = horaSalidaTexto
+    private fun parseSupabaseDate(dateStr: String): java.util.Date? {
+        try {
+            var cleanStr = dateStr.replace(" ", "T")
+            if (cleanStr.contains(".")) {
+                cleanStr = cleanStr.substringBefore(".") + "Z"
+            } else if (cleanStr.contains("+") || cleanStr.contains("-", 19)) {
+                val idx = maxOf(cleanStr.indexOf("+"), cleanStr.lastIndexOf("-"))
+                if (idx >= 19) cleanStr = cleanStr.substring(0, idx) + "Z"
+            }
+            if (!cleanStr.endsWith("Z")) {
+                cleanStr += "Z"
+            }
+            val sdf = java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                java.util.Locale.getDefault()
+            )
+            sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            return sdf.parse(cleanStr)
+        } catch (e: Exception) {
+            return null
+        }
     }
 
     /**
@@ -189,8 +221,11 @@ class DashboardViewModel(
         }
         viewModelScope.launch {
             try {
-                val siguienteAccion =
-                    if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
+                val siguienteAccion = when (ultimoFichaje?.tipoAccion) {
+                    "ENTRADA", "VUELTA" -> "SALIDA"
+                    "PAUSA" -> "VUELTA"
+                    else -> "ENTRADA"
+                }
                 val nuevoLog =
                     fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion, latitud, longitud)
                 ultimoFichaje = nuevoLog
@@ -317,31 +352,6 @@ class DashboardViewModel(
                         if (ultimo == "ENTRADA" || ultimo == "VUELTA") {
                             estado = "Fichado"
                             activos++
-                        }
-                    }
-
-                    /**
-                     * Normaliza cadenas de fechas provenientes de la API externa (Supabase ISO) para su conversión segura.
-                     */
-                    fun parseSupabaseDate(dateStr: String): java.util.Date? {
-                        try {
-                            var cleanStr = dateStr.replace(" ", "T")
-                            if (cleanStr.contains(".")) {
-                                cleanStr = cleanStr.substringBefore(".") + "Z"
-                            } else if (cleanStr.contains("+")) {
-                                cleanStr = cleanStr.substringBefore("+") + "Z"
-                            }
-                            if (!cleanStr.endsWith("Z")) {
-                                cleanStr += "Z"
-                            }
-                            val sdf = java.text.SimpleDateFormat(
-                                "yyyy-MM-dd'T'HH:mm:ss'Z'",
-                                java.util.Locale.getDefault()
-                            )
-                            sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
-                            return sdf.parse(cleanStr)
-                        } catch (e: Exception) {
-                            return null
                         }
                     }
 

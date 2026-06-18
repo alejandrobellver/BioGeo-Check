@@ -53,7 +53,7 @@ fun FichajeDashboardScreen(
     onNavigate: (NavScreen) -> Unit
 ) {
     val trabajador = vm.trabajadorActual
-    val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
+    val isClockedIn = vm.ultimoFichaje?.tipoAccion in listOf("ENTRADA", "VUELTA", "PAUSA")
     val activity = LocalActivity.current as? FragmentActivity
     val context = LocalContext.current
     var gpsTrigger by remember { mutableStateOf(false) }
