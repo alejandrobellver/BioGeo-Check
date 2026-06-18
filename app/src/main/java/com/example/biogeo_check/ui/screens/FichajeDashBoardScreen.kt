@@ -1,6 +1,10 @@
 package com.example.biogeo_check.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -16,6 +20,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +33,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.ui.components.BottomNavBar
@@ -47,10 +56,38 @@ fun FichajeDashboardScreen(
     val isClockedIn = vm.ultimoFichaje?.tipoAccion == "ENTRADA"
     val activity = LocalActivity.current as? FragmentActivity
     val context = LocalContext.current
+    var gpsTrigger by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { granted ->
+        if (granted.all { it.value }) {
+            gpsTrigger = true
+        } else {
+            vm.errorMessage = "Permiso de ubicación denegado. Actívalo en Ajustes."
+        }
+    }
 
     LaunchedEffect(Unit) {
         vm.cargarDatosIniciales()
         vm.cargarDatosPerfil()
+    }
+
+    LaunchedEffect(gpsTrigger) {
+        if (gpsTrigger) {
+            gpsTrigger = false
+            LocationHelper.obtenerUbicacionActual(
+                context = context,
+                onSuccess = { location ->
+                    BiometricHelper.authenticate(
+                        activity = activity!!,
+                        onSuccess = { vm.intentarFichajeConGPS(location.latitude, location.longitude) },
+                        onError = { errorMsg -> vm.errorMessage = errorMsg }
+                    )
+                },
+                onError = { errorMsg -> vm.errorMessage = errorMsg }
+            )
+        }
     }
 
     Column(
@@ -89,25 +126,34 @@ fun FichajeDashboardScreen(
                 Button(
                     onClick = {
                         if (activity != null) {
-                            // 1. Llamamos a nuestra utilidad del GPS encapsulada y limpia
-                            LocationHelper.obtenerUbicacionActual(
-                                context = context,
-                                onSuccess = { location ->
-                                    // 2. Si el GPS responde bien, lanzamos la biometría
-                                    BiometricHelper.authenticate(
-                                        activity = activity,
-                                        onSuccess = {
-                                            // 3. Si la huella pasa, el ViewModel valida los 50 metros contra Supabase
-                                            vm.intentarFichajeConGPS(
-                                                location.latitude,
-                                                location.longitude
-                                            )
-                                        },
-                                        onError = { errorMsg -> vm.errorMessage = errorMsg }
-                                    )
-                                },
-                                onError = { errorMsg -> vm.errorMessage = errorMsg }
+                            val hasFine = ContextCompat.checkSelfPermission(
+                                context, Manifest.permission.ACCESS_FINE_LOCATION
                             )
+                            if (hasFine == PackageManager.PERMISSION_GRANTED) {
+                                LocationHelper.obtenerUbicacionActual(
+                                    context = context,
+                                    onSuccess = { location ->
+                                        BiometricHelper.authenticate(
+                                            activity = activity,
+                                            onSuccess = {
+                                                vm.intentarFichajeConGPS(
+                                                    location.latitude,
+                                                    location.longitude
+                                                )
+                                            },
+                                            onError = { errorMsg -> vm.errorMessage = errorMsg }
+                                        )
+                                    },
+                                    onError = { errorMsg -> vm.errorMessage = errorMsg }
+                                )
+                            } else {
+                                locationPermissionLauncher.launch(
+                                    arrayOf(
+                                        Manifest.permission.ACCESS_FINE_LOCATION,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                    )
+                                )
+                            }
                         } else {
                             vm.errorMessage = "Error: Actividad no compatible."
                         }
