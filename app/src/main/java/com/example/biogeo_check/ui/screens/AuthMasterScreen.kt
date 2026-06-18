@@ -185,7 +185,11 @@ fun AuthMasterScreen(
         var esErrorDialog by remember { mutableStateOf(false) }
 
         AlertDialog(
-            onDismissRequest = { showForgotPasswordDialog = false },
+            onDismissRequest = {
+                showForgotPasswordDialog = false
+                feedbackDialog = ""
+                codigoEnviado = false
+            },
             containerColor = Color(0xFF1E1E1E),
             shape = RoundedCornerShape(12.dp),
             title = {
