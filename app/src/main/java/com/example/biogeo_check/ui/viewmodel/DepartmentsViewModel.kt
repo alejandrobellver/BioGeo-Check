@@ -56,8 +56,15 @@ class DepartmentsViewModel(
                 // 1. Nos bajamos los departamentos actualizados de Supabase
                 _listaDepartamentosAdmin.value = fichajeRepository.obtenerTodosLosDepartamentos()
 
-                // 2. Nos bajamos todos los trabajadores
-                val todosLosTrabajadores = fichajeRepository.obtenerTodosLosTrabajadores()
+                // 2. Nos bajamos los trabajadores de la empresa del usuario autenticado
+                val userId = fichajeRepository.obtenerIdUsuarioAutenticado()
+                val perfil = userId?.let { fichajeRepository.obtenerPerfilTrabajador(it) }
+                val empresaId = perfil?.empresaId
+                val todosLosTrabajadores = if (empresaId != null) {
+                    fichajeRepository.obtenerTrabajadoresPorEmpresa(empresaId)
+                } else {
+                    emptyList()
+                }
                 _listaTrabajadoresAdmin.value = todosLosTrabajadores
 
                 // 3. Calculamos cuántos empleados pertenecen a cada ID de departamento
