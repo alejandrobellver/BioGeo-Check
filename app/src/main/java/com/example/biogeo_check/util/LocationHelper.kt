@@ -6,6 +6,8 @@ import android.location.Location
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object LocationHelper {
 
@@ -47,22 +49,24 @@ object LocationHelper {
      * 🗺️ FUNCIÓN 2: Convierte una dirección de texto en coordenadas geográficas (Lat/Long).
      * Ideal para el registro de empresas. Devuelve null de forma segura si no es válida.
      */
-    fun obtenerCoordenadasDesdeDireccion(
+    suspend fun obtenerCoordenadasDesdeDireccion(
         context: Context,
         direccionCompleta: String
     ): Pair<Double, Double>? {
-        val geocoder = Geocoder(context, java.util.Locale.getDefault())
-        return try {
-            val direcciones = geocoder.getFromLocationName(direccionCompleta, 1)
-            if (!direcciones.isNullOrEmpty()) {
-                val resultado = direcciones[0]
-                Pair(resultado.latitude, resultado.longitude)
-            } else {
+        return withContext(Dispatchers.IO) {
+            val geocoder = Geocoder(context, java.util.Locale.getDefault())
+            try {
+                val direcciones = geocoder.getFromLocationName(direccionCompleta, 1)
+                if (!direcciones.isNullOrEmpty()) {
+                    val resultado = direcciones[0]
+                    Pair(resultado.latitude, resultado.longitude)
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
                 null
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 }
