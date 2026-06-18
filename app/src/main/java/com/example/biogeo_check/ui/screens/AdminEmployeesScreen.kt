@@ -62,7 +62,7 @@ data class EmployeeStat(
 
 @Composable
 fun AdminDashboardScreen(
-    vm: DashboardViewModel = viewModel(),
+    vm: DashboardViewModel,
     onNavigate: (NavScreen) -> Unit
 ) {
     LaunchedEffect(vm.trabajadorActual) {

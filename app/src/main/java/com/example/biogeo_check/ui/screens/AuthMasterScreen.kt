@@ -46,7 +46,7 @@ import com.example.biogeo_check.ui.viewmodel.AuthViewModel
 
 @Composable
 fun AuthMasterScreen(
-    viewModel: AuthViewModel = viewModel(),
+    viewModel: AuthViewModel,
     onNavigateToDashboard: (isJefe: Boolean) -> Unit = {}
 ) {
     val state by viewModel.authState.collectAsState()

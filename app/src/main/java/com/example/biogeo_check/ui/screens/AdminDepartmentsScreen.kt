@@ -58,7 +58,7 @@ import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 
 @Composable
 fun AdminDepartmentsScreen(
-    vm: DepartmentsViewModel = viewModel(),
+    vm: DepartmentsViewModel,
     isJefe: Boolean = false,
     onNavigate: (NavScreen) -> Unit
 ) {

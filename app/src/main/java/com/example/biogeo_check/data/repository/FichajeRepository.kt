@@ -51,17 +51,6 @@ class FichajeRepository(private val supabase: SupabaseClient) {
     }
 
     /**
-     * Obtiene la lista completa de todos los trabajadores registrados en el sistema.
-     *
-     * @return Una lista [List] que contiene a todos los objetos [Trabajador] de la base de datos.
-     */
-    suspend fun obtenerTodosLosTrabajadores(): List<Trabajador> {
-        return supabase.postgrest["trabajador"]
-            .select()
-            .decodeList<Trabajador>()
-    }
-
-    /**
      * Actualiza la información crítica de contacto y asignación estructural de un trabajador.
      *
      * @param trabajadorId El identificador único del trabajador objetivo.

@@ -108,7 +108,7 @@ fun AppNavigation(
                         popUpTo("legal") { inclusive = true }
                     }
                 },
-                onDecline = {}
+                onDecline = { (context as? android.app.Activity)?.finish() }
             )
         }
 

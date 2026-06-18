@@ -49,7 +49,7 @@ import com.example.biogeo_check.util.LocationHelper // 🚀 Importación de tu n
 
 @Composable
 fun FichajeDashboardScreen(
-    vm: DashboardViewModel = viewModel(),
+    vm: DashboardViewModel,
     onNavigate: (NavScreen) -> Unit
 ) {
     val trabajador = vm.trabajadorActual

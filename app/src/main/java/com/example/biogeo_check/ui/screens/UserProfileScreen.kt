@@ -65,8 +65,8 @@ import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreen(
-    vm: DashboardViewModel = viewModel(),
-    authViewModel: AuthViewModel = viewModel(),
+    vm: DashboardViewModel,
+    authViewModel: AuthViewModel,
     onNavigate: (NavScreen) -> Unit,
     onLogout: () -> Unit
 ) {
