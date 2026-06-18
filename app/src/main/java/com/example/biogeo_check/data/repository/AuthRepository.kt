@@ -36,6 +36,14 @@ class AuthRepository(private val supabase: SupabaseClient) {
         latitudCalculada: Double?,
         longitudCalculada: Double?
     ) {
+        val emailNormalizado = email.trim().lowercase()
+
+        val authResponse = supabase.auth.signUpWith(Email) {
+            this.email = emailNormalizado
+            password = contrasena
+        }
+        val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
+
         val nuevaEmpresa = Empresa(
             nombreEmpresa = nombreEmpresa,
             cif = cif,
@@ -49,19 +57,16 @@ class AuthRepository(private val supabase: SupabaseClient) {
             .insert(nuevaEmpresa) { select() }
             .decodeSingle<Empresa>()
 
-        val authResponse = supabase.auth.signUpWith(Email) {
-            this.email = email
-            password = contrasena
-        }
-        val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
+        val empresaId = empresaInsertada.empresaId
+            ?: throw Exception("Error al obtener el ID de la empresa creada")
 
         val nuevoJefe = Trabajador(
             trabajadorId = nuevoUserId,
-            empresaId = empresaInsertada.empresaId!!,
+            empresaId = empresaId,
             nombre = nombreJefe,
             apellidos = apellidosJefe,
             dni = dniJefe,
-            email = email,
+            email = emailNormalizado,
             rol = "JEFE"
         )
         supabase.postgrest["trabajador"].insert(nuevoJefe)
@@ -77,8 +82,9 @@ class AuthRepository(private val supabase: SupabaseClient) {
         apellidos: String,
         dni: String
     ) {
+        val emailNormalizado = email.trim().lowercase()
         val invitado = supabase.postgrest["invitaciones"]
-            .select { filter { eq("email", email) } }
+            .select { filter { eq("email", emailNormalizado) } }
             .decodeSingleOrNull<Invitacion>()
 
         if (invitado == null) {
@@ -86,7 +92,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
         }
 
         val authResponse = supabase.auth.signUpWith(Email) {
-            this.email = email
+            this.email = emailNormalizado
             password = contrasena
         }
         val nuevoUserId = authResponse?.id ?: throw Exception("Error al crear el usuario en Auth")
@@ -97,7 +103,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
             nombre = nombre,
             apellidos = apellidos,
             dni = dni,
-            email = email,
+            email = emailNormalizado,
             rol = invitado.rol,
             departamentoId = invitado.departamentoId,
             contratoId = invitado.contratoId
@@ -105,7 +111,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
         supabase.postgrest["trabajador"].insert(nuevoTrabajador)
 
         supabase.postgrest["invitaciones"].delete {
-            filter { eq("email", email) }
+            filter { eq("email", emailNormalizado) }
         }
     }
 
@@ -117,8 +123,9 @@ class AuthRepository(private val supabase: SupabaseClient) {
      * Valida las credenciales de un usuario en el sistema de control e inicia su sesión de trabajo activa.
      */
     suspend fun login(email: String, contrasena: String): Trabajador {
+        val emailNormalizado = email.trim().lowercase()
         supabase.auth.signInWith(Email) {
-            this.email = email
+            this.email = emailNormalizado
             password = contrasena
         }
         val userId = supabase.auth.currentUserOrNull()?.id
@@ -141,7 +148,7 @@ class AuthRepository(private val supabase: SupabaseClient) {
      */
     suspend fun enviarCodigoRecuperacion(email: String) {
         supabase.auth.resetPasswordForEmail(
-            email = email.trim()
+            email = email.trim().lowercase()
         )
     }
 
@@ -149,16 +156,17 @@ class AuthRepository(private val supabase: SupabaseClient) {
      * Verifica el código OTP para re-autenticar al usuario temporalmente (Firma Real v2.5.0).
      */
     suspend fun verificarCodigoOTP(email: String, codigo: String) {
+        val emailNormalizado = email.trim().lowercase()
         try {
             supabase.auth.verifyEmailOtp(
                 type = OtpType.Email.EMAIL,
-                email = email.trim(),
+                email = emailNormalizado,
                 token = codigo.trim()
             )
         } catch (e: Exception) {
             val currentUser = supabase.auth.currentUserOrNull()
             if (currentUser != null && currentUser.email?.equals(
-                    email.trim(),
+                    emailNormalizado,
                     ignoreCase = true
                 ) == true
             ) {
