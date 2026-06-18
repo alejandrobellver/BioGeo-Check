@@ -140,7 +140,7 @@ fun AuthMasterScreen(
                 }
 
                 is AuthViewModel.AuthState.Error -> {
-                    val mensajeError = (state as AuthViewModel.AuthState.Error).mensaje
+                    val mensajeError = state.mensaje
                     Text(
                         text = "❌ Error: $mensajeError",
                         color = Color(0xFFEF4444),
@@ -150,9 +150,8 @@ fun AuthMasterScreen(
                 }
 
                 is AuthViewModel.AuthState.Success -> {
-                    val stateSuccess = (state as AuthViewModel.AuthState.Success)
-                    val trabajador = stateSuccess.trabajador
-                    val mensaje = stateSuccess.mensajeExito
+                    val trabajador = state.trabajador
+                    val mensaje = state.mensajeExito
                         ?: "✅ ¡Operación Exitosa! Por favor, verifica tu correo antes de iniciar sesión."
                     if (trabajador != null) {
                         LaunchedEffect(Unit) {

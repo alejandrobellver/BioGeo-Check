@@ -76,17 +76,21 @@ fun FichajeDashboardScreen(
     LaunchedEffect(gpsTrigger) {
         if (gpsTrigger) {
             gpsTrigger = false
-            LocationHelper.obtenerUbicacionActual(
-                context = context,
-                onSuccess = { location ->
-                    BiometricHelper.authenticate(
-                        activity = activity!!,
-                        onSuccess = { vm.intentarFichajeConGPS(location.latitude, location.longitude) },
-                        onError = { errorMsg -> vm.errorMessage = errorMsg }
-                    )
-                },
-                onError = { errorMsg -> vm.errorMessage = errorMsg }
-            )
+            if (activity != null) {
+                LocationHelper.obtenerUbicacionActual(
+                    context = context,
+                    onSuccess = { location ->
+                        BiometricHelper.authenticate(
+                            activity = activity,
+                            onSuccess = { vm.intentarFichajeConGPS(location.latitude, location.longitude) },
+                            onError = { errorMsg -> vm.errorMessage = errorMsg }
+                        )
+                    },
+                    onError = { errorMsg -> vm.errorMessage = errorMsg }
+                )
+            } else {
+                vm.errorMessage = "Error: Actividad no compatible."
+            }
         }
     }
 
