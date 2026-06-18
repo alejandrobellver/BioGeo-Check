@@ -218,7 +218,12 @@ class FichajeRepository(private val supabase: SupabaseClient) {
      * @param tipo La etiqueta de la acción realizada (por ejemplo, "ENTRADA" o "SALIDA").
      * @return El objeto [Fichaje] completo persistido en la base de datos.
      */
-    suspend fun registrarFichaje(trabajadorId: String, tipo: String): Fichaje {
+    suspend fun registrarFichaje(
+        trabajadorId: String,
+        tipo: String,
+        latitud: Double,
+        longitud: Double
+    ): Fichaje {
         val sdfIso =
             java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault())
         sdfIso.timeZone = java.util.TimeZone.getTimeZone("UTC")
@@ -228,8 +233,8 @@ class FichajeRepository(private val supabase: SupabaseClient) {
             trabajadorId = trabajadorId,
             horaFichaje = timestampIso,
             tipoAccion = tipo,
-            latitud = 40.416775,
-            longitud = -3.703790
+            latitud = latitud,
+            longitud = longitud
         )
         return supabase.postgrest["fichaje"].insert(nuevoRegistro) {
             select()

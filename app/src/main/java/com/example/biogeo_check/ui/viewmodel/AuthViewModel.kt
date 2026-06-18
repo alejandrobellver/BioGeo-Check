@@ -32,7 +32,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                val trabajador = repository.login(email, contrasena)
+                val trabajador = repository.login(email.trim().lowercase(), contrasena)
                 _authState.value = AuthState.Success(trabajador)
             } catch (e: Exception) {
                 _authState.value =
@@ -64,7 +64,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
                 // 2. Pasar los datos calculados al repositorio de Supabase
                 repository.registrarJefeYEmpresa(
-                    email = email,
+                    email = email.trim().lowercase(),
                     contrasena = contrasena,
                     nombreEmpresa = nombreEmpresa,
                     cif = cif,
@@ -170,7 +170,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 }
 
                 // Llama al metodo exacto de tu AuthRepository
-                repository.enviarCodigoRecuperacion(email.trim())
+                repository.enviarCodigoRecuperacion(email.trim().lowercase())
 
                 _authState.value = AuthState.Idle
                 onResultado(true, "¡Código enviado con éxito!")

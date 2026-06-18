@@ -198,7 +198,7 @@ class DashboardViewModel(
      * * Inserta un nuevo registro en el historial de eventos, invalida la caché del contrato actual,
      * recalcula las métricas diarias y maneja las excepciones de red de forma temporal visualizándolas en la UI.
      */
-    fun alternarFichaje() {
+    fun alternarFichaje(latitud: Double = 0.0, longitud: Double = 0.0) {
         val trabajador = trabajadorActual
         if (trabajador == null) {
             errorMessage = "Error Crítico: No hay usuario en memoria."
@@ -209,7 +209,7 @@ class DashboardViewModel(
                 val siguienteAccion =
                     if (ultimoFichaje?.tipoAccion == "ENTRADA") "SALIDA" else "ENTRADA"
                 val nuevoLog =
-                    fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion)
+                    fichajeRepository.registrarFichaje(trabajador.trabajadorId, siguienteAccion, latitud, longitud)
                 ultimoFichaje = nuevoLog
 
                 trabajador.contratoId?.let { cId ->
@@ -582,7 +582,7 @@ class DashboardViewModel(
                 if (distanciaMetros <= 200f) {
                     errorMessage = null
 
-                    alternarFichaje()
+                    alternarFichaje(latCelular, lonCelular)
                 } else {
                     errorMessage =
                         "Estás a ${distanciaMetros.toInt()}m de la oficina. Debes estar a menos de 200m para poder fichar."
