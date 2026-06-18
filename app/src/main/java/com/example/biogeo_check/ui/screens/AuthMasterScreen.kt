@@ -388,6 +388,7 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color, context: Context) {
     var cif by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
     var cp by remember { mutableStateOf("") }
+    var cpError by remember { mutableStateOf(false) }
     var ciudad by remember { mutableStateOf("") }
     var nombreJefe by remember { mutableStateOf("") }
     var apellidosJefe by remember { mutableStateOf("") }
@@ -437,8 +438,9 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color, context: Context) {
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = cp,
-            onValueChange = { cp = it },
+            onValueChange = { cp = it; cpError = false },
             label = { Text("Código Postal") },
+            isError = cpError,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -501,9 +503,19 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color, context: Context) {
             singleLine = true
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        if (cpError) {
+            Text("El código postal debe ser numérico", color = Color(0xFFEF4444), fontSize = 12.sp)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
+                val cpVal = cp.toIntOrNull()
+                if (cpVal == null) {
+                    cpError = true
+                    return@Button
+                }
                 vm.registrarJefeYEmpresa(
                     context = context,
                     email = email,
@@ -511,7 +523,7 @@ fun RegistroJefeView(vm: AuthViewModel, color: Color, context: Context) {
                     nombreEmpresa = nombreEmpresa,
                     cif = cif,
                     direccion = direccion,
-                    cp = cp.toIntOrNull() ?: 0,
+                    cp = cpVal,
                     ciudad = ciudad,
                     nombreJefe = nombreJefe,
                     apellidosJefe = apellidosJefe,
