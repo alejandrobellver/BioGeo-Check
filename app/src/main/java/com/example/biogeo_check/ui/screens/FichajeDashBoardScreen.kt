@@ -201,6 +201,14 @@ fun FichajeDashboardScreen(
                 value = vm.horaSiguienteEventoTexto
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // TARJETA 3
+            DashboardCard(
+                title = "Tiempo Trabajado",
+                value = vm.tiempoTrabajadoHoy
+            )
+
             if (isClockedIn) {
                 Spacer(modifier = Modifier.height(16.dp))
 

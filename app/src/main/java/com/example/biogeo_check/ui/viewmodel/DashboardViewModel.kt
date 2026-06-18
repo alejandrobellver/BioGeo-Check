@@ -152,18 +152,39 @@ class DashboardViewModel(
     }
 
     private fun calcularTiempoTrabajadoHoy() {
-        val trabajador = trabajadorActual ?: return
+        val sdfLocal = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+        sdfLocal.timeZone = java.util.TimeZone.getDefault()
 
         val horasSemanalesCelda = tipoContrato?.horasSemanales ?: 40
         val horasJornadaDiaria = horasSemanalesCelda / 5
 
-        val sdfLocal = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-        sdfLocal.timeZone = java.util.TimeZone.getDefault()
-
-        if (ultimoFichaje?.horaFichaje != null) {
-            val parsed = parseSupabaseDate(ultimoFichaje!!.horaFichaje!!)
+        val ultimo = ultimoFichaje
+        if (ultimo?.horaFichaje != null) {
+            val parsed = parseSupabaseDate(ultimo.horaFichaje!!)
             if (parsed != null) {
                 horaFichajeTexto = sdfLocal.format(parsed)
+
+                val calInicio = java.util.Calendar.getInstance()
+                calInicio.time = parsed
+                val hInicio = calInicio.get(java.util.Calendar.HOUR_OF_DAY)
+                val mInicio = calInicio.get(java.util.Calendar.MINUTE)
+                val hSalidaCalc = (hInicio + horasJornadaDiaria.toInt()) % 24
+                horaSiguienteEventoTexto = String.format(
+                    java.util.Locale.getDefault(), "%02d:%02d", hSalidaCalc, mInicio
+                )
+
+                if (ultimo.tipoAccion in listOf("ENTRADA", "VUELTA", "PAUSA")) {
+                    val ahora = java.util.Date()
+                    val diffMs = ahora.time - parsed.time
+                    val mins = diffMs / 60000
+                    val h = mins / 60
+                    val m = mins % 60
+                    tiempoTrabajadoHoy = String.format(
+                        java.util.Locale.getDefault(), "%02d:%02d", h, m
+                    )
+                } else {
+                    tiempoTrabajadoHoy = "--:--"
+                }
             } else {
                 val cal = java.util.Calendar.getInstance()
                 horaFichajeTexto = String.format(
@@ -171,6 +192,8 @@ class DashboardViewModel(
                     cal.get(java.util.Calendar.HOUR_OF_DAY),
                     cal.get(java.util.Calendar.MINUTE)
                 )
+                horaSiguienteEventoTexto = "--:--"
+                tiempoTrabajadoHoy = "--:--"
             }
         } else {
             val cal = java.util.Calendar.getInstance()
@@ -179,15 +202,9 @@ class DashboardViewModel(
                 cal.get(java.util.Calendar.HOUR_OF_DAY),
                 cal.get(java.util.Calendar.MINUTE)
             )
+            horaSiguienteEventoTexto = "--:--"
+            tiempoTrabajadoHoy = "--:--"
         }
-
-        val calSalida = java.util.Calendar.getInstance()
-        val hActual = calSalida.get(java.util.Calendar.HOUR_OF_DAY)
-        val mActual = calSalida.get(java.util.Calendar.MINUTE)
-        val hSalidaCalc = (hActual + horasJornadaDiaria.toInt()) % 24
-        horaSiguienteEventoTexto = String.format(
-            java.util.Locale.getDefault(), "%02d:%02d", hSalidaCalc, mActual
-        )
     }
 
     private fun parseSupabaseDate(dateStr: String): java.util.Date? {
