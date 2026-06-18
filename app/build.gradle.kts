@@ -33,7 +33,6 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
         buildConfig = true
     }
 
@@ -50,15 +49,8 @@ dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.cardview)
-
-    // Lifecycle / ViewModel
     implementation(libs.androidx.lifecycle.viewmodel)
-    implementation(libs.androidx.lifecycle.livedata)
     implementation(libs.androidx.lifecycle.runtime)
 
     // Coroutines
@@ -70,9 +62,6 @@ dependencies {
 
     // Location
     implementation(libs.play.services.location)
-
-    // DataStore (session)
-    implementation(libs.androidx.datastore)
 
     // Testing
     testImplementation(libs.junit)
@@ -86,8 +75,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     implementation("androidx.navigation:navigation-compose:2.7.7")
-
-    implementation(libs.material.v1120)
 
     implementation("com.google.android.material:material:1.12.0")
 

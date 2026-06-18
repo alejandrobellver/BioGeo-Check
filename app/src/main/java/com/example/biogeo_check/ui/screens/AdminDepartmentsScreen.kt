@@ -44,7 +44,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.biogeo_check.data.model.Departamento
 import com.example.biogeo_check.data.model.Trabajador
 import com.example.biogeo_check.ui.components.BottomNavBar

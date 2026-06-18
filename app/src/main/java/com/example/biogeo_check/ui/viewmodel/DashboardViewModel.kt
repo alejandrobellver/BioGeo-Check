@@ -129,6 +129,7 @@ class DashboardViewModel(
             try {
                 if (!SupabaseClient.checkSession()) {
                     trabajadorActual = null
+                    errorMessage = "Tu sesión ha expirado. Inicia sesión de nuevo."
                     return@launch
                 }
                 val userId = fichajeRepository.obtenerIdUsuarioAutenticado() ?: return@launch
