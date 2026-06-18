@@ -7,6 +7,9 @@ import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.serializer.KotlinXSerializer
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
 
 object SupabaseClient {
@@ -22,5 +25,14 @@ object SupabaseClient {
         defaultSerializer = KotlinXSerializer(Json {
             ignoreUnknownKeys = true
         })
+    }
+
+    private val _sessionExpired = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val sessionExpired: SharedFlow<Unit> = _sessionExpired.asSharedFlow()
+
+    suspend fun checkSession(): Boolean {
+        val valid = client.auth.currentSessionOrNull != null
+        if (!valid) _sessionExpired.tryEmit(Unit)
+        return valid
     }
 }

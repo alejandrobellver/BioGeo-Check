@@ -10,6 +10,7 @@ import com.example.biogeo_check.data.model.Departamento
 import com.example.biogeo_check.data.model.Fichaje
 import com.example.biogeo_check.data.model.TipoContrato
 import com.example.biogeo_check.data.model.Trabajador
+import com.example.biogeo_check.data.network.SupabaseClient
 import com.example.biogeo_check.data.repository.FichajeRepository
 import com.example.biogeo_check.ui.screens.EmployeeStat
 import kotlinx.coroutines.launch
@@ -126,6 +127,10 @@ class DashboardViewModel(
     fun cargarDatosIniciales() {
         viewModelScope.launch {
             try {
+                if (!SupabaseClient.checkSession()) {
+                    trabajadorActual = null
+                    return@launch
+                }
                 val userId = fichajeRepository.obtenerIdUsuarioAutenticado() ?: return@launch
                 val t = fichajeRepository.obtenerPerfilTrabajador(userId)
                 trabajadorActual = t

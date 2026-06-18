@@ -3,6 +3,7 @@ package com.example.biogeo_check.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.biogeo_check.data.model.Trabajador
+import com.example.biogeo_check.data.network.SupabaseClient
 import com.example.biogeo_check.data.repository.AuthRepository
 import com.example.biogeo_check.util.LocationHelper.obtenerCoordenadasDesdeDireccion
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,14 @@ import kotlinx.coroutines.launch
  * de autenticación, registro y gestión de sesiones.
  */
 class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            SupabaseClient.sessionExpired.collect {
+                _authState.value = AuthState.Error("Tu sesión ha expirado. Inicia sesión de nuevo.")
+            }
+        }
+    }
 
     sealed class AuthState {
         object Idle : AuthState()
