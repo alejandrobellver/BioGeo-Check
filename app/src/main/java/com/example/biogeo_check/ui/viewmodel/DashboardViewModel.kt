@@ -160,37 +160,20 @@ class DashboardViewModel(
 
         val horasSemanalesCelda = tipoContrato?.horasSemanales ?: 40
         val horasJornadaDiaria = horasSemanalesCelda / 5
-        val esEntrada = ultimoFichaje?.tipoAccion == "ENTRADA"
 
-        if (esEntrada) {
-            val horaEntradaTexto =
-                String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
+        val horaEntradaTexto =
+            String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
 
-            val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
-            val horaSalidaTexto = String.format(
-                java.util.Locale.getDefault(),
-                "%02d:%02d",
-                horaSalidaCalculada,
-                minutoActual
-            )
+        val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
+        val horaSalidaTexto = String.format(
+            java.util.Locale.getDefault(),
+            "%02d:%02d",
+            horaSalidaCalculada,
+            minutoActual
+        )
 
-            horaFichajeTexto = horaEntradaTexto
-            horaSiguienteEventoTexto = horaSalidaTexto
-        } else {
-            val horaEntradaTexto =
-                String.format(java.util.Locale.getDefault(), "%02d:%02d", horaActual, minutoActual)
-
-            val horaSalidaCalculada = (horaActual + horasJornadaDiaria) % 24
-            val horaSalidaTexto = String.format(
-                java.util.Locale.getDefault(),
-                "%02d:%02d",
-                horaSalidaCalculada,
-                minutoActual
-            )
-
-            horaFichajeTexto = horaEntradaTexto
-            horaSiguienteEventoTexto = horaSalidaTexto
-        }
+        horaFichajeTexto = horaEntradaTexto
+        horaSiguienteEventoTexto = horaSalidaTexto
     }
 
     /**
