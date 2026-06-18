@@ -74,7 +74,6 @@ fun AuthMasterScreen(
                 .padding(bottom = 48.dp)
         ) {
 
-            // TÍTULO
             Text(
                 text = "BioGeo-Check",
                 color = emerald,
@@ -133,7 +132,6 @@ fun AuthMasterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // CONTROL DE ESTADOS DE AUTENTICACIÓN
             when (state) {
                 is AuthViewModel.AuthState.Loading -> {
                     CircularProgressIndicator(color = emerald, modifier = Modifier.padding(20.dp))

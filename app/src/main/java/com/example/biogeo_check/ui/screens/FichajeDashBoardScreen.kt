@@ -36,7 +36,7 @@ import com.example.biogeo_check.ui.theme.EmeraldGreen
 import com.example.biogeo_check.ui.theme.PrimaryTextWhite
 import com.example.biogeo_check.ui.viewmodel.DashboardViewModel
 import com.example.biogeo_check.util.BiometricHelper
-import com.example.biogeo_check.util.LocationHelper // 🚀 Importación de tu nueva utilidad añadida
+import com.example.biogeo_check.util.LocationHelper
 
 @Composable
 fun FichajeDashboardScreen(
@@ -89,15 +89,12 @@ fun FichajeDashboardScreen(
                 Button(
                     onClick = {
                         if (activity != null) {
-                            // 1. Llamamos a nuestra utilidad del GPS encapsulada y limpia
                             LocationHelper.obtenerUbicacionActual(
                                 context = context,
                                 onSuccess = { location ->
-                                    // 2. Si el GPS responde bien, lanzamos la biometría
                                     BiometricHelper.authenticate(
                                         activity = activity,
                                         onSuccess = {
-                                            // 3. Si la huella pasa, el ViewModel valida los 50 metros contra Supabase
                                             vm.intentarFichajeConGPS(
                                                 location.latitude,
                                                 location.longitude
@@ -137,7 +134,6 @@ fun FichajeDashboardScreen(
                     ?: vm.listaContratos.firstOrNull()?.descanso
                     ?: 30
 
-            // TARJETA 1
             DashboardCard(
                 title = "Hora de Entrada",
                 value = vm.horaFichajeTexto
@@ -145,7 +141,6 @@ fun FichajeDashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // TARJETA 2
             DashboardCard(
                 title = "Hora de Salida",
                 value = vm.horaSiguienteEventoTexto
