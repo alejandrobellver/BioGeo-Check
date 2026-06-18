@@ -146,7 +146,7 @@ class DashboardViewModel(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                errorMessage = e.message
+                errorMessage = obtenerMensajeErrorHumano(e)
             }
         }
     }
@@ -254,10 +254,8 @@ class DashboardViewModel(
             } catch (e: Exception) {
                 e.printStackTrace()
                 errorMessage = obtenerMensajeErrorHumano(e)
-                viewModelScope.launch {
-                    kotlinx.coroutines.delay(5000)
-                    errorMessage = null
-                }
+                kotlinx.coroutines.delay(5000)
+                errorMessage = null
             }
         }
     }
@@ -490,10 +488,8 @@ class DashboardViewModel(
                     inviteError = "Este correo ya está registrado o hay un error de conexión."
                 }
 
-                viewModelScope.launch {
-                    kotlinx.coroutines.delay(5000)
-                    inviteError = null
-                }
+                kotlinx.coroutines.delay(5000)
+                inviteError = null
             }
         }
     }
@@ -595,10 +591,8 @@ class DashboardViewModel(
                     errorMessage =
                         "Estás a ${distanciaMetros.toInt()}m de la oficina. Debes estar a menos de 200m para poder fichar."
 
-                    launch {
-                        kotlinx.coroutines.delay(5000)
-                        errorMessage = null
-                    }
+                    kotlinx.coroutines.delay(5000)
+                    errorMessage = null
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
