@@ -238,8 +238,9 @@ class DashboardViewModel(
         viewModelScope.launch {
             try {
                 val siguienteAccion = when (ultimoFichaje?.tipoAccion) {
-                    "ENTRADA", "VUELTA" -> "SALIDA"
+                    "ENTRADA" -> "PAUSA"
                     "PAUSA" -> "VUELTA"
+                    "VUELTA" -> "SALIDA"
                     else -> "ENTRADA"
                 }
                 val nuevoLog =

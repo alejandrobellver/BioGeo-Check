@@ -126,53 +126,46 @@ fun FichajeDashboardScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
+                val hasFine = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                )
+                val hasCoarse = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+                val tienePermiso = hasFine == PackageManager.PERMISSION_GRANTED ||
+                        hasCoarse == PackageManager.PERMISSION_GRANTED
+
                 Button(
                     onClick = {
-                        if (activity != null) {
-                            LocationHelper.obtenerUbicacionActual(
-                                context = context,
-                                onSuccess = { location ->
-                                    BiometricHelper.authenticate(
-                                        activity = activity,
-                                        onSuccess = {
-                                            vm.intentarFichajeConGPS(
-                                                location.latitude,
-                                                location.longitude
-                                            )
-                                        },
-                                        onError = { errorMsg -> vm.errorMessage = errorMsg }
-                                    )
-                                },
-                                onError = { errorMsg -> vm.errorMessage = errorMsg }
+                        if (activity == null) {
+                            vm.errorMessage = "Error: Actividad no compatible."
+                            return@Button
+                        }
+                        if (!tienePermiso) {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
                             )
-                            if (hasFine == PackageManager.PERMISSION_GRANTED) {
-                                LocationHelper.obtenerUbicacionActual(
-                                    context = context,
-                                    onSuccess = { location ->
-                                        BiometricHelper.authenticate(
-                                            activity = activity,
-                                            onSuccess = {
-                                                vm.intentarFichajeConGPS(
-                                                    location.latitude,
-                                                    location.longitude
-                                                )
-                                            },
-                                            onError = { errorMsg -> vm.errorMessage = errorMsg }
+                            return@Button
+                        }
+                        LocationHelper.obtenerUbicacionActual(
+                            context = context,
+                            onSuccess = { location ->
+                                BiometricHelper.authenticate(
+                                    activity = activity,
+                                    onSuccess = {
+                                        vm.intentarFichajeConGPS(
+                                            location.latitude,
+                                            location.longitude
                                         )
                                     },
                                     onError = { errorMsg -> vm.errorMessage = errorMsg }
                                 )
-                            } else {
-                                locationPermissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION
-                                    )
-                                )
-                            }
-                        } else {
-                            vm.errorMessage = "Error: Actividad no compatible."
-                        }
+                            },
+                            onError = { errorMsg -> vm.errorMessage = errorMsg }
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
@@ -183,8 +176,14 @@ fun FichajeDashboardScreen(
                     ),
                     shape = RoundedCornerShape(24.dp)
                 ) {
+                    val textoBoton = when (vm.ultimoFichaje?.tipoAccion) {
+                        "ENTRADA" -> "PAUSA"
+                        "PAUSA" -> "VOLVER"
+                        "VUELTA" -> "FICHAR SALIDA"
+                        else -> "FICHAR ENTRADA"
+                    }
                     Text(
-                        text = if (isClockedIn) "FICHAR SALIDA" else "FICHAR ENTRADA",
+                        text = textoBoton,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp
