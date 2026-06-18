@@ -76,7 +76,7 @@ fun AuthMasterScreen(
 
             // TÍTULO
             Text(
-                text = "BioGeo-Check Test",
+                text = "BioGeo-Check",
                 color = emerald,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
