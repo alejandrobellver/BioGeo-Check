@@ -59,6 +59,7 @@ import com.example.biogeo_check.ui.viewmodel.DepartmentsViewModel
 @Composable
 fun AdminDepartmentsScreen(
     vm: DepartmentsViewModel = viewModel(),
+    isJefe: Boolean = false,
     onNavigate: (NavScreen) -> Unit
 ) {
     LaunchedEffect(Unit) {
@@ -131,7 +132,7 @@ fun AdminDepartmentsScreen(
 
         BottomNavBar(
             currentScreen = NavScreen.DEPARTMENTS,
-            isJefe = true,
+            isJefe = isJefe,
             onNavigate = onNavigate
         )
     }

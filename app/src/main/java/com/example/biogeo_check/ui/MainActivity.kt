@@ -173,6 +173,7 @@ fun AppNavigation(
         composable("admin_departments") {
             AdminDepartmentsScreen(
                 vm = departmentsViewModel,
+                isJefe = dashboardViewModel.trabajadorActual?.rol == "JEFE",
                 onNavigate = { screen ->
                     when (screen) {
                         NavScreen.HOME -> navController.navigate("fichaje_dashboard")
