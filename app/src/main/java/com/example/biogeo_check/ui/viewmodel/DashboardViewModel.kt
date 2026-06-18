@@ -187,22 +187,15 @@ class DashboardViewModel(
 
     private fun parseSupabaseDate(dateStr: String): java.util.Date? {
         try {
-            var cleanStr = dateStr.replace(" ", "T")
-            if (cleanStr.contains(".")) {
-                cleanStr = cleanStr.substringBefore(".") + "Z"
-            } else if (cleanStr.contains("+") || cleanStr.contains("-", 19)) {
-                val idx = maxOf(cleanStr.indexOf("+"), cleanStr.lastIndexOf("-"))
-                if (idx >= 19) cleanStr = cleanStr.substring(0, idx) + "Z"
-            }
-            if (!cleanStr.endsWith("Z")) {
-                cleanStr += "Z"
-            }
+            val cleaned = dateStr.replace(" ", "T")
+                .replaceFirst(Regex("\\.\\d+"), "")
+                .replaceFirst(Regex("[+-]\\d{2}:\\d{2}$"), "Z")
+                .let { if (!it.endsWith("Z")) it + "Z" else it }
             val sdf = java.text.SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ss'Z'",
-                java.util.Locale.getDefault()
+                "yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault()
             )
             sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
-            return sdf.parse(cleanStr)
+            return sdf.parse(cleaned)
         } catch (e: Exception) {
             return null
         }
